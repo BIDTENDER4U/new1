@@ -469,5 +469,29 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
       { label: 'About Us', path: '/about-us', desc: 'Company credentials and contact information.' }
     ],
     pageType: 'website'
+  },
+  '/payment-details': {
+    path: '/payment-details',
+    title: 'Official Payment Details & Verified UPI Gateway | Bid Tender 4 U',
+    description: 'Official payment gateway for Bid Tender 4 U. Verified UPI ID: singhbaldev70368-2@okicici (Singh Baldev), ICICI Bank, QR code scan, and retainer fee tax invoice billing.',
+    keywords: 'payment, upi, payment details, singhbaldev70368-2@okicici, singh baldev, icici bank, qr code, retainer fee, tender consultancy fees, gem registration payment',
+    canonical: `${CANONICAL_BASE}/payment-details`,
+    breadcrumbTitle: 'Payment Details',
+    h1: 'Official Bank & UPI Payment Details',
+    lead: 'Official ICICI Bank verified UPI gateway for consultancy retainer fees, tender document feasibility audits, and Class-3 DSC issuance.',
+    keyPoints: [
+      'Official UPI ID (VPA): singhbaldev70368-2@okicici.',
+      'Payee Name: Singh Baldev (Bid Tender 4 U All India Tender Consultancy).',
+      'Bank: ICICI Bank, Current / Merchant Account.',
+      'Instant QR Code payment supporting Google Pay, PhonePe, Paytm, and BHIM UPI.',
+      'Formal GST tax invoice and digital acknowledgment issued within 2 hours.'
+    ],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Full technical folder packaging and bid submission.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'GeM vendor onboarding and documents.' },
+      { label: 'Free Tender Summary', path: '/free-tender-summary', desc: 'Extract master parameters from live tenders.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Visit our Ahmedabad HQ or call our desk.' }
+    ],
+    pageType: 'service'
   }
 };

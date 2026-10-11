@@ -27,7 +27,8 @@ import {
   Info,
   Search,
   CornerDownLeft,
-  ChevronDown
+  ChevronDown,
+  QrCode
 } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
 import { searchIndex, SearchItem } from '../lib/searchIndex';
@@ -41,6 +42,7 @@ interface HeaderProps {
   onOpenLettersModal?: () => void;
   onOpenRadarModal?: (initialQuery?: string) => void;
   onOpenMapsModal?: (initialQuery?: string) => void;
+  onOpenPaymentModal?: () => void;
   isMenuOpen?: boolean;
   onToggleMenu?: () => void;
 }
@@ -54,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLettersModal,
   onOpenRadarModal,
   onOpenMapsModal,
+  onOpenPaymentModal,
   isMenuOpen: externalMenuOpen,
   onToggleMenu: externalToggleMenu,
 }) => {
@@ -80,6 +83,17 @@ export const Header: React.FC<HeaderProps> = ({
   const defaultWhatsAppUrl = getWhatsAppUrl('Hello Bid Tender 4 U, I would like to consult with a specialist regarding a government tender.');
 
   const handleNavClick = (page: string, articleSlug?: string) => {
+    if (page === 'payment' || page === 'payment-details') {
+      if (onOpenPaymentModal) {
+        onOpenPaymentModal();
+      } else {
+        onNavigate(page, articleSlug);
+      }
+      closeMenu();
+      setIsSearchOpen(false);
+      setSearchQuery('');
+      return;
+    }
     onNavigate(page, articleSlug);
     closeMenu();
     setIsSearchOpen(false);
@@ -217,6 +231,7 @@ export const Header: React.FC<HeaderProps> = ({
       links: [
         { id: 'contact-us', path: '/contact-us', label: 'Contact Us', icon: PhoneCall, desc: 'Submit tender document for preliminary audit' },
         { id: 'faqs', path: '/faqs', label: 'Tender FAQs', icon: HelpCircle, desc: 'EMD exemption & tender bidding queries' },
+        { id: 'payment', path: '/payment-details', label: 'Payment Details (UPI)', icon: QrCode, desc: 'Official UPI singhbaldev70368-2@okicici & QR code' },
       ],
     },
   ];
@@ -333,7 +348,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Consolidated Tender Tools Dropdown (Replaces multiple competing pills) */}
-            {(onOpenRadarModal || onOpenMapsModal || onOpenFreeSummaryModal || onOpenLettersModal) && (
+            {(onOpenRadarModal || onOpenMapsModal || onOpenFreeSummaryModal || onOpenLettersModal || onOpenPaymentModal) && (
               <div className="relative hidden md:block" ref={toolsDropdownRef}>
                 <button
                   type="button"
@@ -458,9 +473,50 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       </button>
                     )}
+
+                    {onOpenPaymentModal && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          onOpenPaymentModal();
+                        }}
+                        className="w-full p-2.5 rounded-xl hover:bg-emerald-50/80 transition-colors flex items-start gap-3 text-left group cursor-pointer border-t border-slate-100"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                          <QrCode className="w-4 h-4 text-emerald-700" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-[#1D3557] group-hover:text-emerald-950">
+                              Payment Details (UPI)
+                            </span>
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-600 text-white font-mono">
+                              Verified
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-500 line-clamp-1 font-mono">
+                            singhbaldev70368-2@okicici
+                          </span>
+                        </div>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Pay Online / UPI Button */}
+            {onOpenPaymentModal && (
+              <button
+                type="button"
+                onClick={onOpenPaymentModal}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200 hover:border-emerald-300 rounded-xl transition-colors shadow-2xs cursor-pointer"
+                title="View Official UPI Payment Details (singhbaldev70368-2@okicici)"
+              >
+                <QrCode className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Pay UPI</span>
+              </button>
             )}
 
             {/* WhatsApp CTA (Clean, subtle icon button on tablet/desktop) */}
@@ -888,6 +944,38 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     <ArrowRight className="w-4 h-4 text-red-700 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
+                  </div>
+                )}
+
+                {/* Official UPI & Payment Details Card in Drawer */}
+                {onOpenPaymentModal && (
+                  <div
+                    onClick={() => {
+                      closeMenu();
+                      onOpenPaymentModal();
+                    }}
+                    className="p-3.5 rounded-2xl bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200 hover:border-emerald-300 flex items-center justify-between gap-3 shadow-xs cursor-pointer group transition-all"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <QrCode className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black text-emerald-950 block">
+                            Bank & UPI Payment Details
+                          </span>
+                          <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-600 text-white font-mono">
+                            ICICI Verified
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-emerald-800 font-medium block font-mono">
+                          singhbaldev70368-2@okicici
+                        </span>
+                      </div>
+                    </div>
+
+                    <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
                   </div>
                 )}
 

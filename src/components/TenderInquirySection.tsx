@@ -15,19 +15,27 @@ import {
   Trash2,
   RefreshCw,
   FileArchive,
-  FileSpreadsheet
+  FileSpreadsheet,
+  QrCode,
+  Copy,
+  ArrowRight
 } from 'lucide-react';
 import { FormType, TenderInquiryFormData } from '../types';
-import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
+import { BUSINESS_INFO, PAYMENT_INFO, getWhatsAppUrl } from '../lib/constants';
 import { submitTenderInquiry, generateWhatsAppInquiryMessage } from '../lib/api';
 import { useToast } from '../context/ToastContext';
 
 interface TenderInquirySectionProps {
   preselectedService?: string;
   preselectedCategory?: string;
+  onOpenPaymentModal?: () => void;
 }
 
-export const TenderInquirySection: React.FC<TenderInquirySectionProps> = ({ preselectedService, preselectedCategory }) => {
+export const TenderInquirySection: React.FC<TenderInquirySectionProps> = ({ 
+  preselectedService, 
+  preselectedCategory,
+  onOpenPaymentModal 
+}) => {
   const { showToast } = useToast();
   const [formType, setFormType] = useState<FormType>('tender');
   const [name, setName] = useState('');
@@ -101,6 +109,23 @@ export const TenderInquirySection: React.FC<TenderInquirySectionProps> = ({ pres
 
     setFile(candidateFile);
     return true;
+  };
+
+  const handleCopyUpi = async () => {
+    try {
+      await navigator.clipboard.writeText(PAYMENT_INFO.upiId);
+      showToast({
+        title: 'UPI ID Copied to Clipboard',
+        description: PAYMENT_INFO.upiId,
+        type: 'success',
+      });
+    } catch {
+      showToast({
+        title: 'Official UPI ID',
+        description: PAYMENT_INFO.upiId,
+        type: 'info',
+      });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -823,6 +848,50 @@ export const TenderInquirySection: React.FC<TenderInquirySectionProps> = ({ pres
                 <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
                   Your BOQ pricing estimates, financial reports, and proprietary technical credentials remain strictly confidential under standard non-disclosure compliance.
                 </p>
+              </div>
+
+              {/* Official UPI Payment Card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/70 to-slate-50 border border-emerald-200 text-xs text-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-[#1D3557] font-mono flex items-center gap-1.5">
+                    <QrCode className="w-4 h-4 text-emerald-700" />
+                    <span>Official UPI Payment Account</span>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    ICICI Bank
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white border border-slate-300 flex items-center justify-between gap-2 shadow-2xs">
+                  <span className="font-mono font-black text-xs sm:text-sm text-slate-950 truncate select-all">
+                    {PAYMENT_INFO.upiId}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyUpi}
+                    className="px-2.5 py-1 rounded-lg bg-[#1D3557] hover:bg-[#152742] text-white font-bold text-[11px] transition-colors shrink-0 cursor-pointer shadow-xs flex items-center gap-1"
+                    title="Copy UPI ID to clipboard"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-0.5 text-[11px]">
+                  <span className="text-slate-600">
+                    Payee: <strong className="text-slate-900">{PAYMENT_INFO.payeeName}</strong>
+                  </span>
+                  {onOpenPaymentModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenPaymentModal}
+                      className="font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 cursor-pointer hover:underline"
+                    >
+                      <span>Scan QR Code</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

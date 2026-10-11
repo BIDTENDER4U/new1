@@ -19,15 +19,17 @@ import {
   Award, 
   KeyRound,
   RefreshCw,
-  Globe
+  Globe,
+  QrCode
 } from 'lucide-react';
-import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
+import { BUSINESS_INFO, PAYMENT_INFO, getWhatsAppUrl } from '../lib/constants';
 
 interface FreeTenderSummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenInquiry?: (category?: string, service?: string) => void;
   onOpenRadarModal?: (initialQuery?: string) => void;
+  onOpenPaymentModal?: () => void;
 }
 
 interface TenderSummaryReport {
@@ -182,6 +184,7 @@ export const FreeTenderSummaryModal: React.FC<FreeTenderSummaryModalProps> = ({
   onClose,
   onOpenInquiry,
   onOpenRadarModal,
+  onOpenPaymentModal,
 }) => {
   const [selectedSampleKey, setSelectedSampleKey] = useState<string>('aiims_diet');
   const [customBidNumber, setCustomBidNumber] = useState('');
@@ -571,6 +574,21 @@ export const FreeTenderSummaryModal: React.FC<FreeTenderSummaryModalProps> = ({
               >
                 <Globe className="w-3.5 h-3.5 text-blue-700" />
                 <span>Google Radar Check</span>
+              </button>
+            )}
+
+            {onOpenPaymentModal && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenPaymentModal();
+                }}
+                className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                title="Official UPI: singhbaldev70368-2@okicici"
+              >
+                <QrCode className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Pay Retainer / UPI</span>
               </button>
             )}
           </div>

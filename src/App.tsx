@@ -26,6 +26,7 @@ import { ProcurementBlog } from './components/ProcurementBlog';
 import { StatutoryLettersModal } from './components/StatutoryLettersModal';
 import { LiveTenderRadarModal } from './components/LiveTenderRadarModal';
 import { GoogleMapsLocatorModal } from './components/GoogleMapsLocatorModal';
+import { PaymentDetailsModal } from './components/PaymentDetailsModal';
 import { ArrowLeft, ArrowRight, ShieldCheck, Phone, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from './lib/constants';
 import { ROUTES_SEO } from './lib/seoData';
@@ -67,6 +68,7 @@ export default function App() {
   const [isMapsModalOpen, setIsMapsModalOpen] = useState(false);
   const [mapsInitialQuery, setMapsInitialQuery] = useState('');
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('Tender Document Analysis & Eligibility Audit');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
@@ -119,6 +121,16 @@ export default function App() {
         hash === 'summary'
       ) {
         setIsFreeSummaryOpen(true);
+      }
+      if (
+        pathname === 'payment' ||
+        pathname === 'payment-details' ||
+        pathname === 'pay' ||
+        hash === 'payment' ||
+        hash === 'payment-details' ||
+        hash === 'pay'
+      ) {
+        setIsPaymentModalOpen(true);
       }
 
       // Handle blog article paths: /blog/slug or #blog-slug
@@ -210,6 +222,10 @@ export default function App() {
     }
 
     const clean = page.toLowerCase().replace(/^\/+|\/+$/g, '');
+    if (clean === 'payment' || clean === 'payment-details' || clean === 'pay') {
+      setIsPaymentModalOpen(true);
+      return;
+    }
     if (clean === 'gem-registration' || clean === 'gem-documents') {
       targetPage = 'gem-registration';
       targetPath = '/gem-registration';
@@ -284,6 +300,7 @@ export default function App() {
           setMapsInitialQuery(q || '');
           setIsMapsModalOpen(true);
         }}
+        onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
         isMenuOpen={isMenuOpen}
         onToggleMenu={() => setIsMenuOpen(!isMenuOpen)}
       />
@@ -301,6 +318,7 @@ export default function App() {
               setRadarInitialQuery(q || '');
               setIsRadarModalOpen(true);
             }}
+            onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
           />
         )}
 
@@ -599,6 +617,7 @@ export default function App() {
             <TenderInquirySection
               preselectedService={selectedService}
               preselectedCategory={selectedCategory}
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
             />
           </div>
         )}
@@ -646,6 +665,7 @@ export default function App() {
         onOpenChecklistModal={() => setIsChecklistOpen(true)}
         onScrollToForm={() => handleOpenInquiryForm()}
         onNavigate={navigateTo}
+        onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
       />
 
       {/* Free Tender Summary Diagnostic Modal */}
@@ -657,6 +677,7 @@ export default function App() {
           setRadarInitialQuery(q || '');
           setIsRadarModalOpen(true);
         }}
+        onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
       />
 
       {/* Instant Tender Inquiry Popup Modal (Opens from any button) */}
@@ -666,6 +687,7 @@ export default function App() {
         initialCategory={selectedCategory}
         initialService={selectedService}
         initialCity={selectedCity}
+        onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
       />
 
       {/* Admin Leads & Inquiries Database Modal (Hidden from public; open with Ctrl+Shift+L or #admin-leads) */}
@@ -703,6 +725,13 @@ export default function App() {
         onClose={() => setIsMapsModalOpen(false)}
         initialQuery={mapsInitialQuery}
         onOpenInquiry={handleOpenInquiryForm}
+      />
+
+      {/* Official UPI Payment Details Modal */}
+      <PaymentDetailsModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        serviceName={selectedService}
       />
 
       {/* Floating Instant WhatsApp Button */}

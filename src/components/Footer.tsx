@@ -6,9 +6,10 @@ interface FooterProps {
   onOpenChecklistModal: () => void;
   onScrollToForm: () => void;
   onNavigate?: (page: string) => void;
+  onOpenPaymentModal?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenChecklistModal, onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenChecklistModal, onNavigate, onOpenPaymentModal }) => {
   const handleNav = (page: string) => {
     if (onNavigate) {
       onNavigate(page);
@@ -268,6 +269,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenChecklistModal, onNavigate
             </div>
           </div>
         </div>
+
+
 
         {/* Bottom Copyright & Primary HTML Sitelinks Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-medium">

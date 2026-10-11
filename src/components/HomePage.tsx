@@ -34,6 +34,7 @@ interface HomePageProps {
   onOpenChecklistModal: () => void;
   onOpenFreeSummaryModal?: () => void;
   onOpenRadarModal?: (initialQuery?: string) => void;
+  onOpenPaymentModal?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -42,6 +43,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onOpenChecklistModal,
   onOpenFreeSummaryModal,
   onOpenRadarModal,
+  onOpenPaymentModal,
 }) => {
   return (
     <div className="space-y-0 text-left">

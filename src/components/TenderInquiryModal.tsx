@@ -13,11 +13,12 @@ import {
   Trash2, 
   RefreshCw,
   FileArchive,
-  FileSpreadsheet
+  FileSpreadsheet,
+  QrCode
 } from 'lucide-react';
 import { FormType, TenderInquiryFormData } from '../types';
 import { submitTenderInquiry, generateWhatsAppInquiryMessage } from '../lib/api';
-import { getWhatsAppUrl } from '../lib/constants';
+import { getWhatsAppUrl, PAYMENT_INFO } from '../lib/constants';
 import { useToast } from '../context/ToastContext';
 
 interface TenderInquiryModalProps {
@@ -26,6 +27,7 @@ interface TenderInquiryModalProps {
   initialCategory?: string;
   initialService?: string;
   initialCity?: string;
+  onOpenPaymentModal?: () => void;
 }
 
 export const TenderInquiryModal: React.FC<TenderInquiryModalProps> = ({
@@ -34,6 +36,7 @@ export const TenderInquiryModal: React.FC<TenderInquiryModalProps> = ({
   initialCategory,
   initialService,
   initialCity,
+  onOpenPaymentModal,
 }) => {
   const { showToast } = useToast();
   const [formType, setFormType] = useState<FormType>('tender');
@@ -330,7 +333,30 @@ export const TenderInquiryModal: React.FC<TenderInquiryModalProps> = ({
                 Thank you, <strong>{name}</strong>. Your inquiry is stored in our active database. Our senior tender officer will review your scope and contact you shortly.
               </p>
 
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              {/* Instant Retainer / Payment Note */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-left max-w-md mx-auto flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                    <QrCode className="w-4 h-4 text-emerald-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">Official UPI Payment Desk</span>
+                    <span className="font-mono font-bold text-xs text-slate-900 truncate block">{PAYMENT_INFO.upiId}</span>
+                  </div>
+                </div>
+
+                {onOpenPaymentModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenPaymentModal}
+                    className="px-3 py-1.5 rounded-lg bg-[#1D3557] hover:bg-[#152742] text-white font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-xs"
+                  >
+                    View QR
+                  </button>
+                )}
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={handleWhatsAppDirect}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs"

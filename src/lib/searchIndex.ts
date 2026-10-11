@@ -86,6 +86,18 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     keywords: ['summary', 'tender', 'bidding', 'msme', 'startup', 'free tender summary', 'master tender summary table', 'tender summary', 'extraction', 'eligibility table', 'required documents', 'forms and annexures', 'pdf export'],
   },
   {
+    id: 'payment-details',
+    title: 'Official Payment Details & UPI Gateway (singhbaldev70368-2@okicici)',
+    description: 'Instant UPI transfer, QR Code, ICICI Bank details, and retainer payment receipt generation for Bid Tender 4 U.',
+    type: 'service',
+    path: '/payment-details',
+    pageId: 'payment',
+    keywords: [
+      'payment', 'payment details', 'upi', 'upi id', 'singhbaldev70368-2@okicici', 'singh baldev', 'icici', 'qr code',
+      'scan to pay', 'retainer fee', 'fees', 'bhim', 'phonepe', 'gpay', 'google pay', 'paytm', 'bank transfer'
+    ],
+  },
+  {
     id: 'certifications',
     title: 'Startup India, MSME Benefits, ISO & Class-3 DSC',
     description: 'DPIIT startup prior turnover waiver, MSME Udyam GFR 170 EMD exemption, All Types of ISO certifications & 30-min Class-3 combo DSC tokens.',

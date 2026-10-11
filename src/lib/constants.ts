@@ -19,6 +19,37 @@ export const BUSINESS_INFO = {
   appsScriptEndpoint: 'https://script.google.com/macros/s/AKfycbxY_SoCpfIXTd_G6lK4MyJlyB8bTjYeqEO0cseLOnun0Z-voT-NhthJbjb5WbfrLZaH/exec',
   whatsappBaseUrl: 'https://wa.me/919726407267',
   workingHours: 'Mon - Sat: 9:30 AM - 7:30 PM IST',
+  upiId: 'singhbaldev70368-2@okicici',
+  payeeName: 'Singh Baldev (Bid Tender 4 U)',
+};
+
+export const PAYMENT_INFO = {
+  upiId: 'singhbaldev70368-2@okicici',
+  payeeName: 'Singh Baldev',
+  firmName: 'Bid Tender 4 U All India Tender Consultancy',
+  bankName: 'ICICI Bank',
+  vpaProvider: 'OK ICICI (Google Pay / PhonePe / BHIM)',
+  accountType: 'Current / Merchant Account',
+  branch: 'Ahmedabad, Gujarat',
+  upiDeepLink: 'upi://pay?pa=singhbaldev70368-2@okicici&pn=Singh%20Baldev%20Bid%20Tender%204%20U&cu=INR',
+  qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=upi%3A%2F%2Fpay%3Fpa%3Dsinghbaldev70368-2%40okicici%26pn%3DSingh%2520Baldev%2520Bid%2520Tender%25204%2520U%26cu%3DINR',
+  acceptedApps: [
+    { name: 'Google Pay', tag: 'Instant GPay' },
+    { name: 'PhonePe', tag: 'Direct UPI' },
+    { name: 'Paytm', tag: 'Wallet & Bank' },
+    { name: 'BHIM UPI', tag: 'Govt NPCI' },
+    { name: 'ICICI iMobile', tag: 'Direct Bank' },
+    { name: 'Any UPI App', tag: 'QR Code' }
+  ],
+  standardPurposes: [
+    'Tender NIT Document Scrutiny & Feasibility Audit',
+    'GeM Portal Primary / Reseller Seller Registration',
+    'GeM OEM Authorization Codes & MAF Drafts',
+    'Class-3 Combo DSC (Signing + Encryption) Crypto USB Token',
+    'All Types of ISO Certification (9001/14001/45001/27001/13485)',
+    'Packet A Technical Folder & Packet B BOQ Packaging'
+  ],
+  billingNote: 'Official Consultancy & Retainer Payment Gateway. GST Invoice and formal receipt dispatched on WhatsApp / Email upon transaction confirmation.',
 };
 
 export function getWhatsAppUrl(prefilledText: string): string {
