@@ -1,0 +1,8 @@
+{
+  "name": "Remix Bid Tender 4 U - Government Tender \u0026 GeM Consultancy",
+  "description": "All India tender consultancy for GeM portal bidding, AI Tender Scanner, hospital equipment tenders, civil infrastructure consulting, ISO Certification, Class-3 DSC, and GeM OEM Authorization codes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

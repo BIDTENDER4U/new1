@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="40%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="navyDisc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1D3557" />
+      <stop offset="100%" stop-color="#0E1D33" />
+    </linearGradient>
+    <filter id="goldGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  
+  <!-- Outer Gold Ring -->
+  <circle cx="250" cy="250" r="225" fill="none" stroke="url(#goldGrad)" stroke-width="22" />
+  
+  <!-- Top Node Accent -->
+  <circle cx="250" cy="25" r="16" fill="url(#goldGrad)" />
+  <circle cx="250" cy="25" r="6" fill="#FFFFFF" opacity="0.8" />
+
+  <!-- Inner Authoritative Navy Circle -->
+  <circle cx="250" cy="250" r="195" fill="url(#navyDisc)" stroke="#D4AF70" stroke-width="2.5" stroke-opacity="0.4" />
+
+  <!-- 100% Unobstructed, High-Contrast "B" and "4" Letters -->
+  <g fill="url(#goldGrad)" filter="url(#goldGlow)">
+    <!-- Bold Letter "B" (Cleanly positioned on the left) -->
+    <path d="M 125 130 H 205 C 235 130, 254 146, 254 172 C 254 190, 243 203, 227 210 C 247 218, 260 234, 260 258 C 260 290, 233 308, 196 308 H 125 Z M 165 164 V 203 H 198 C 212 203, 220 195, 220 184 C 220 172, 212 164, 198 164 Z M 165 235 V 275 H 198 C 214 275, 224 266, 224 255 C 224 243, 214 235, 198 235 Z" />
+
+    <!-- Bold Digit "4" (Cleanly positioned on the right) -->
+    <path d="M 312 130 H 350 V 238 H 378 V 272 H 350 V 308 H 312 V 272 H 250 V 238 L 312 130 Z M 285 238 H 312 V 186 L 285 238 Z" />
+  </g>
+
+  <!-- Elegant Verified Checkmark Swoosh below the letters, never obstructing letter visibility -->
+  <path d="M 160 350 L 220 388 L 340 330" fill="none" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#goldGlow)" />
+</svg>

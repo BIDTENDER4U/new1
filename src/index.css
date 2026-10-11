@@ -1,0 +1,350 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-page: #F8F9FA;
+    --navy-headings: #1D3557;
+    --navy-btn: #1D3557;
+    --navy-btn-hover: #152742;
+    --gold-accent: #D4AF70;
+    --gold-accent-hover: #C59F5E;
+    --border-soft-slate: #D9E0E8;
+    --footer-navy: #102038;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F8F9FA;
+    color: #1E293B;
+  }
+
+  body {
+    background-color: #F8F9FA;
+    color: #1E293B;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: #1D3557;
+    font-weight: 800;
+  }
+
+  body {
+    color: #1E293B;
+  }
+}
+
+
+/* ==========================================================================
+   1. Clean, Spacious Pages: Background #F8F9FA
+   ========================================================================== */
+html,
+body,
+#root,
+.app-root,
+main,
+section.bg-slate-50,
+section.bg-neutral-50,
+div.bg-slate-50:not(button):not(input):not(select):not(footer) {
+  background-color: #F8F9FA !important;
+}
+
+/* ==========================================================================
+   2. Headings & Light Area Text: Authoritative #1D3557
+   (Excluded from dark footer and dark buttons so text is NEVER hidden)
+   ========================================================================== */
+h1:not(footer *),
+h2:not(footer *),
+h3:not(footer *),
+h4:not(footer *):not([class*="text-[#D4AF70]"]),
+h5:not(footer *),
+h6:not(footer *),
+.font-display:not(footer *):not([class*="text-white"]):not(button *) {
+  color: #1D3557;
+}
+
+/* Header standard navigation text */
+header {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-bottom: 1px solid #D9E0E8 !important;
+  box-shadow: 0 1px 3px 0 rgba(29, 53, 87, 0.05) !important;
+}
+
+header nav a,
+header a:not([class*="bg-"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-white"]):not([class*="text-[#D4AF70]"]),
+header button[class*="bg-white"],
+header button[class*="bg-slate-50"],
+header button:not([class*="bg-"]) {
+  color: #1D3557 !important;
+}
+
+header nav a:hover,
+header a:not([class*="bg-"]):hover {
+  color: #152742 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #D4AF70 !important;
+  text-underline-offset: 4px !important;
+}
+
+/* ==========================================================================
+   3. Buttons: Navy (#1D3557) with 100% VISIBLE CRISP WHITE TEXT (#FFFFFF)
+   ========================================================================== */
+button[class*="bg-[#1D3557]"],
+button[class*="bg-[#152742]"],
+button[class*="bg-slate-9"],
+button[class*="bg-slate-8"],
+button[class*="bg-black"],
+button[class*="bg-amber-5"],
+button[class*="bg-amber-4"],
+button[type="submit"],
+a[class*="bg-[#1D3557]"],
+a[class*="bg-[#152742]"],
+a[class*="bg-slate-9"],
+a[class*="bg-slate-8"],
+a[class*="bg-black"],
+.btn-navy,
+.btn-primary {
+  background-color: #1D3557 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #1D3557 !important;
+  box-shadow: 0 2px 4px rgba(29, 53, 87, 0.16) !important;
+}
+
+button[class*="bg-[#1D3557]"]:hover,
+button[class*="bg-[#152742]"]:hover,
+button[class*="bg-slate-9"]:hover,
+button[class*="bg-slate-8"]:hover,
+button[class*="bg-black"]:hover,
+button[type="submit"]:hover,
+a[class*="bg-[#1D3557]"]:hover,
+a[class*="bg-[#152742]"]:hover,
+a[class*="bg-slate-9"]:hover,
+a[class*="bg-slate-8"]:hover,
+a[class*="bg-black"]:hover,
+.btn-navy:hover,
+.btn-primary:hover {
+  background-color: #152742 !important;
+  color: #FFFFFF !important;
+  border-color: #152742 !important;
+}
+
+/* 100% FORCED PURE WHITE TEXT for ALL text, labels, spans, and child elements inside Navy buttons */
+button[class*="bg-[#1D3557]"] *,
+button[class*="bg-[#152742]"] *,
+button[class*="bg-slate-9"] *,
+button[class*="bg-slate-8"] *,
+button[class*="bg-black"] *,
+button[class*="bg-amber-5"] *,
+button[class*="bg-amber-4"] *,
+button[type="submit"] *,
+a[class*="bg-[#1D3557]"] *,
+a[class*="bg-[#152742]"] *,
+a[class*="bg-slate-9"] *,
+header button[class*="bg-[#1D3557]"] *,
+.btn-navy *,
+.btn-primary * {
+  color: #FFFFFF !important;
+}
+
+/* Allow gold accent icon inside Navy buttons to retain glowing gold color */
+button[class*="bg-[#1D3557]"] svg[class*="text-[#D4AF70]"],
+button[class*="bg-[#1D3557]"] [class*="text-[#D4AF70]"],
+a[class*="bg-[#1D3557]"] svg[class*="text-[#D4AF70]"],
+a[class*="bg-[#1D3557]"] [class*="text-[#D4AF70]"] {
+  color: #D4AF70 !important;
+}
+
+/* WhatsApp action buttons retain green identification */
+button[class*="bg-emerald-6"],
+button[class*="bg-emerald-7"],
+a[class*="bg-emerald-6"],
+a[class*="bg-emerald-7"] {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+  border-color: #059669 !important;
+}
+
+button[class*="bg-emerald-6"]:hover,
+a[class*="bg-emerald-6"]:hover {
+  background-color: #047857 !important;
+}
+
+button[class*="bg-emerald-6"] *,
+a[class*="bg-emerald-6"] * {
+  color: #FFFFFF !important;
+}
+
+/* White / Light buttons (Search, Menu, Outline) have #1D3557 text */
+header button[class*="bg-white"],
+header button[class*="bg-white"] span,
+button[class*="bg-slate-100"],
+button[class*="bg-slate-100"] span {
+  color: #1D3557 !important;
+}
+
+/* ==========================================================================
+   4. Accents: #D4AF70 — Subtle Gold for Icons, Dividers, and Highlights
+   ========================================================================== */
+.text-accent-gold,
+.text-\[\#D4AF70\] {
+  color: #D4AF70 !important;
+}
+
+/* On light pages, ensure letters/text with gold accent have high contrast (4.8:1 ratio) so they are crisp and visible */
+body :not(footer):not(footer *):not([class*="bg-[#1D3557]"]):not([class*="bg-[#102038]"]):not([class*="bg-slate-9"]):not([class*="bg-black"]):not([class*="bg-emerald-6"]) span.text-\[\#D4AF70\],
+body :not(footer):not(footer *):not([class*="bg-[#1D3557]"]):not([class*="bg-[#102038]"]):not([class*="bg-slate-9"]):not([class*="bg-black"]):not([class*="bg-emerald-6"]) p.text-\[\#D4AF70\],
+body :not(footer):not(footer *):not([class*="bg-[#1D3557]"]):not([class*="bg-[#102038]"]):not([class*="bg-slate-9"]):not([class*="bg-black"]):not([class*="bg-emerald-6"]) a.text-\[\#D4AF70\] {
+  color: #996515 !important;
+}
+
+.border-accent-gold,
+.border-\[\#D4AF70\] {
+  border-color: #D4AF70 !important;
+}
+
+.decoration-accent-gold,
+.decoration-\[\#D4AF70\] {
+  text-decoration-color: #D4AF70 !important;
+}
+
+/* Gold Heading text with guaranteed fallbacks */
+.gold-gradient-text {
+  color: #996515 !important;
+  font-weight: 900 !important;
+}
+
+/* Subtle Gold Badges & Highlights */
+.badge-gold,
+.bg-amber-100:not(button):not(a),
+.bg-amber-50:not(button):not(a) {
+  background-color: rgba(212, 175, 112, 0.14) !important;
+  border: 1px solid rgba(212, 175, 112, 0.4) !important;
+  color: #1D3557 !important;
+}
+
+/* ==========================================================================
+   5. Cards and Tender Categories: White Backgrounds with Thin Soft-Slate Borders (#D9E0E8)
+   ========================================================================== */
+.card,
+.bg-white,
+div[class*="rounded-2xl"]:not(button):not(input):not(select):not(header):not(footer):not([class*="bg-[#1"]):not([class*="bg-slate-9"]):not([class*="bg-slate-8"]):not([class*="bg-black"]):not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-rose"]):not([class*="bg-red"]),
+div[class*="rounded-xl"]:not(button):not(input):not(select):not(header):not(footer):not([class*="bg-[#1"]):not([class*="bg-slate-9"]):not([class*="bg-slate-8"]):not([class*="bg-black"]):not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-rose"]):not([class*="bg-red"]) {
+  background-color: #FFFFFF !important;
+  border-color: #D9E0E8 !important;
+  box-shadow: 0 1px 3px 0 rgba(29, 53, 87, 0.04), 0 1px 2px -1px rgba(29, 53, 87, 0.04) !important;
+}
+
+.border-slate-200,
+.border-slate-300,
+.border-neutral-200,
+.border-neutral-300 {
+  border-color: #D9E0E8 !important;
+}
+
+.hover\:border-amber-400:hover,
+.hover\:border-amber-500:hover,
+.hover\:border-slate-300:hover,
+.hover\:border-slate-400:hover {
+  border-color: #D4AF70 !important;
+}
+
+/* Form inputs & textareas inside cards */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  background-color: #FFFFFF !important;
+  color: #1D3557 !important;
+  border: 1.5px solid #D9E0E8 !important;
+  font-weight: 600 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #D4AF70 !important;
+  outline: 2px solid rgba(212, 175, 112, 0.3) !important;
+  outline-offset: 1px !important;
+}
+
+/* ==========================================================================
+   6. Footer: Deep Navy (#102038) with 100% VISIBLE WHITE TEXT & GOLD ACCENTS
+   ========================================================================== */
+footer {
+  background-color: #102038 !important;
+  color: #FFFFFF !important;
+  border-top: 1px solid rgba(212, 175, 112, 0.3) !important;
+}
+
+/* Brand wordmark BIDTENDER and headings in footer are explicitly CRISP WHITE */
+footer .text-white,
+footer span.text-white,
+footer .font-display,
+footer h1,
+footer h2,
+footer h3,
+footer h5,
+footer h6 {
+  color: #FFFFFF !important;
+}
+
+/* Footer Section Header Titles (e.g. Core Services & Sitelinks, Registered Office) */
+footer h4,
+footer h4.text-\[\#D4AF70\],
+footer [class*="text-[#D4AF70]"],
+footer svg[class*="text-[#D4AF70]"] {
+  color: #D4AF70 !important;
+}
+
+/* Body and supporting copy in footer */
+footer p,
+footer li,
+footer span:not(.font-display):not([class*="text-white"]):not([class*="text-[#D4AF70]"]):not([class*="text-emerald"]):not([class*="text-gold"]),
+footer .text-slate-300,
+footer .text-slate-400,
+footer .text-slate-500,
+footer .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+footer a {
+  color: #E2E8F0 !important;
+}
+
+footer a:hover {
+  color: #D4AF70 !important;
+  text-decoration: underline !important;
+}
+
+footer .border-slate-800,
+footer .border-b,
+footer .border-t {
+  border-color: rgba(217, 224, 232, 0.15) !important;
+}
+
+/* ==========================================================================
+   Mobile Bottom Navigation & Modals
+   ========================================================================== */
+[data-mobile-nav="true"] {
+  background-color: #FFFFFF !important;
+  border-color: #D9E0E8 !important;
+  box-shadow: 0 -4px 16px rgba(29, 53, 87, 0.08) !important;
+}
+
+[data-mobile-nav="true"] button {
+  color: #1D3557 !important;
+  font-weight: 700 !important;
+}
+
+[data-mobile-nav="true"] button:hover {
+  color: #D4AF70 !important;
+}
+
+div[role="dialog"] > div:last-child,
+.modal-content {
+  background-color: #FFFFFF !important;
+  border: 1px solid #D9E0E8 !important;
+  color: #1D3557 !important;
+  box-shadow: 0 20px 25px -5px rgba(29, 53, 87, 0.15), 0 8px 10px -6px rgba(29, 53, 87, 0.1) !important;
+}

@@ -1,0 +1,10 @@
+# Robots.txt for Bid Tender 4 U (https://www.bidtender4u.com/)
+# Professional Government Tender & GeM Consultancy
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /#admin-leads
+
+# XML Sitemap Location
+Sitemap: https://www.bidtender4u.com/sitemap.xml

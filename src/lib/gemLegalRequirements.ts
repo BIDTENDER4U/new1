@@ -1,0 +1,171 @@
+export interface LegalRequirementDetail {
+  id: string;
+  ruleRef: string;
+  purpose: string;
+  benefit: string;
+  scrutinyFocus: string;
+}
+
+export const GEM_LEGAL_REQUIREMENTS: Record<string, LegalRequirementDetail> = {
+  'startup-india': {
+    id: 'startup-india',
+    ruleRef: 'GFR 2017 Rule 173(i) & DPIIT Notification No. G.S.R. 127(E)',
+    purpose: 'Statutory proof of DPIIT Recognized Startup status under Startup India initiative, legally waiving mandatory prior turnover and prior experience thresholds.',
+    benefit: '100% waiver from Prior Turnover and Prior Experience in public procurement, 100% EMD exemption, direct onboarding on GeM Startup Runway, and 80% rebate on IP filings.',
+    scrutinyFocus: 'Active DPIIT Certificate number verified against Startup India database; entity incorporation date within 10 years; compliance with turnover ceiling (<₹100 Cr).',
+  },
+  'fssai-license': {
+    id: 'fssai-license',
+    ruleRef: 'Food Safety and Standards Act 2006 Section 31 & FoSCoS Regulations',
+    purpose: 'Statutory hygiene, safety, and sanitary licensing mandated by law for any vendor preparing, processing, transporting, or distributing food items in government establishments.',
+    benefit: 'Mandatory statutory eligibility for Food/Canteen tenders, Hospital Dietary services, Mid-Day Meal schemes, IRCTC catering, and Defense ration supplies with zero disqualification.',
+    scrutinyFocus: 'Active 14-digit FSSAI license number matching premise address and food business operator (FBO) category (Basic / State / Central) required by the tender NIT.',
+  },
+  'udyam-msme': {
+    id: 'udyam-msme',
+    ruleRef: 'GFR 2017 Rule 170(i) & Public Procurement Policy for MSEs Order 2012',
+    purpose: 'Statutory verification of Micro and Small Enterprise (MSE) status under MSMED Act 2006 to enforce mandatory 25% annual government procurement reservations.',
+    benefit: '100% statutory exemption from Earnest Money Deposit (EMD) and tender document fees, zero Caution Money deposit on GeM, and L1+15% price purchase preference band.',
+    scrutinyFocus: 'Tender committee verifies 5-digit NIC (National Industrial Classification) codes match the tender BOQ scope and Udyam status is active on MSME portal.',
+  },
+  'pan-card': {
+    id: 'pan-card',
+    ruleRef: 'Income Tax Act 1961 Section 139A & GFR 2017 Rule 144(xi)',
+    purpose: 'Establishes legal entity identity, direct tax liability, and beneficial ownership to prevent shell company cartelization, proxy bidding, and tax evasion.',
+    benefit: 'Enables instant automated API verification on GeM via CBDT database, eliminating physical gazetted notarization requirements.',
+    scrutinyFocus: 'Entity PAN matching business registration, active PAN-Aadhaar linking status, and compliance with Section 206AB higher TDS rates.',
+  },
+  'aadhaar-signatory': {
+    id: 'aadhaar-signatory',
+    ruleRef: 'Aadhaar Act 2016 Section 7 & Information Technology Act 2000 Section 3A / 67A',
+    purpose: 'Binds the key signatory personally to contractual liabilities and non-repudiation of commercial financial bids submitted on the electronic portal.',
+    benefit: 'Authorizes real-time mobile OTP e-KYC, instantaneous electronic signing of bid documents, and secure role delegation to secondary users.',
+    scrutinyFocus: 'Mobile number registered with UIDAI must match primary profile to receive bid encryption and submission authorization codes.',
+  },
+  'gstin-certificate': {
+    id: 'gstin-certificate',
+    ruleRef: 'CGST Act 2017 Section 25 & Rule 10A, GFR 2017 Rule 175',
+    purpose: 'Verifies state tax jurisdiction, legal place of business, and enables automated GeM invoice generation and statutory 2% TDS deduction under CGST Section 51.',
+    benefit: 'Guarantees buyer Input Tax Credit (ITC) eligibility and prevents automatic payment freeze during Consignee Receipt and Acceptance Certificate (CRAC).',
+    scrutinyFocus: 'GSTIN status must be active; principal place of business address must match tender delivery jurisdiction without return filing defaults.',
+  },
+  'bank-pfms': {
+    id: 'bank-pfms',
+    ruleRef: 'Public Financial Management System (PFMS) Mandate & GFR 2017 Rule 102',
+    purpose: 'Integrates commercial bank account directly with Central Government Treasury Single Account (TSA) system for automated Direct Benefit Transfer (DBT).',
+    benefit: 'Secures direct treasury payment disbursement within 10 days of CRAC generation without intermediary bureaucratic cheque clearing delays.',
+    scrutinyFocus: 'Bank account title must match 100% with PAN legal entity name; bank IFSC must be mapped to an active PFMS-integrated commercial bank branch.',
+  },
+  'itr-returns': {
+    id: 'itr-returns',
+    ruleRef: 'GFR 2017 Rule 173(v) & Ministry of Finance Procurement Manual Rule 4.3',
+    purpose: 'Confirms multi-year financial solvency, commercial continuity, and establishes verified revenue baseline for Average Annual Financial Turnover (AAFT).',
+    benefit: 'Satisfies standard 30%–50% estimated bid value financial threshold criteria, unlocking eligibility for high-value CPWD, Railway, and GeM bids.',
+    scrutinyFocus: 'Gross business turnover in ITR Acknowledgements cross-verified against Form 26AS / AIS and audited balance sheets with UDIN.',
+  },
+  'official-email-mobile': {
+    id: 'official-email-mobile',
+    ruleRef: 'Information Technology Act 2000 Section 13 & GeM GTC Clause 4.2',
+    purpose: 'Designates official statutory electronic address for legal notices, bid clarification representations, corrigendum alerts, and dispute proceedings.',
+    benefit: 'Ensures immediate alerts for mandatory 48-to-72-hour buyer technical clarification windows to avoid ex-parte bid disqualification.',
+    scrutinyFocus: 'Registered domain/official email consistency across MCA, GSTN, and GeM systems to prevent unauthorized account hijacking.',
+  },
+  'caution-money': {
+    id: 'caution-money',
+    ruleRef: 'GeM Special Terms & Conditions (STC) & Circular No. 2020/09',
+    purpose: 'Statutory performance security held in GeM virtual nodal account to deter frivolous bidding, specification tampering, or post-L1 contract abandonment.',
+    benefit: 'Maintains uninterrupted catalog search indexing; MSEs with valid Udyam certificate enjoy 100% statutory exemption from this deposit.',
+    scrutinyFocus: 'Non-MSE sellers must maintain required slab (₹5K for <₹1Cr, ₹10K for ₹1-10Cr, ₹25K for >₹10Cr) or portal automatically suspends active catalogs.',
+  },
+  'trademark-oem': {
+    id: 'trademark-oem',
+    ruleRef: 'Trade Marks Act 1999 Section 28 & GeM Brand Approval Policy (Quadrant-1)',
+    purpose: 'Affirms exclusive statutory intellectual property rights, preventing counterfeiters and unverified traders from listing under your brand name.',
+    benefit: 'Unlocks Brand Owner / OEM status on GeM, allowing creation of master product specifications and issuance of official reseller authorization codes.',
+    scrutinyFocus: 'Trademark class must exactly match the relevant GeM product category; registered TM or valid applied-for TM-A with official examination report.',
+  },
+  'factory-license': {
+    id: 'factory-license',
+    ruleRef: 'Factories Act 1948 Section 6 & Public Procurement (Preference to Make in India) Order 2017',
+    purpose: 'Statutory proof of domestic industrial manufacturing infrastructure, certifying genuine Class-I / Class-II local manufacturer status.',
+    benefit: 'Grants eligibility for Make in India reserved tenders, exemptions from past experience/turnover under GFR Rule 173(i), and QCI assessment waiver.',
+    scrutinyFocus: 'Factory inspectorate license validity, installed plant machinery capacity, and DIC/Udyam manufacturing NIC codes.',
+  },
+  'iso-certification': {
+    id: 'iso-certification',
+    ruleRef: 'Bureau of Indian Standards (BIS) Act 2016 & QCI Vendor Assessment Framework',
+    purpose: 'Certifies implementation of accredited Quality Management Systems (QMS) ensuring defect-free manufacturing and documented client redressal.',
+    benefit: 'Earns vital technical evaluation marks in QCBS tenders and satisfies mandatory Quality Council of India (QCI) vendor assessment criteria.',
+    scrutinyFocus: 'Accreditation body must be IAF or NABCB recognized; scope of certification must cover tender specific goods or services.',
+  },
+  'nabl-test-reports': {
+    id: 'nabl-test-reports',
+    ruleRef: 'NABL Accreditation Mandate & CVC Technical Guidelines for Public Works',
+    purpose: 'Independent empirical laboratory testing confirming manufactured goods comply with precise Indian Standards (IS/BIS) and technical tender schedules.',
+    benefit: 'Defeats frivolous competitor technical disqualification protests during bid scrutiny and pre-dispatch inspection (PDI).',
+    scrutinyFocus: 'QR-coded NABL test certificate issued by an accredited laboratory within the validity period specified in the tender NIT.',
+  },
+  'pcb-cto': {
+    id: 'pcb-cto',
+    ruleRef: 'Water Act 1974 Section 25, Air Act 1981 Section 21 & NGT Directives',
+    purpose: 'Statutory environmental compliance certifying industrial emissions, waste water, and hazardous materials adhere to state pollution limits.',
+    benefit: 'Mandatory compliance document for public health, chemical, solar, road construction, and hospital equipment tenders.',
+    scrutinyFocus: 'State Pollution Control Board Consent to Operate (CTO) validity period must cover the entire manufacturing and supply schedule.',
+  },
+  'oem-authorization': {
+    id: 'oem-authorization',
+    ruleRef: 'Competition Act 2002 & GeM General Terms and Conditions (GTC) Clause 3.4',
+    purpose: 'Legally binds the original manufacturer to provide 3-5 year warranty support, spare parts availability, and technical service back-to-back.',
+    benefit: 'Allows non-manufacturing dealers and distributors to legally bid on high-margin OEM-restricted government contracts.',
+    scrutinyFocus: 'Tender-specific Manufacturer Authorization Form (MAF) on OEM letterhead or GeM portal digital authorization pairing code.',
+  },
+  'reseller-panel-linking': {
+    id: 'reseller-panel-linking',
+    ruleRef: 'GeM Digital Authorization Framework & Quadrant-2 Pairing Mechanism',
+    purpose: 'Cryptographic mapping between OEM master dashboard and reseller profile, eliminating fraudulent paper authorization letters.',
+    benefit: 'Ensures 100% automated clearance during GeM pre-bid algorithm document verification, preventing manual tender scrutiny rejection.',
+    scrutinyFocus: 'Live digital pairing code must remain valid and unrevoked in GeM backend at the exact timestamp of bid opening.',
+  },
+  'non-disqualification': {
+    id: 'non-disqualification',
+    ruleRef: 'GFR 2017 Rule 151 (Debarment) & Prevention of Corruption Act 1988',
+    purpose: 'Formal legal affidavit affirming the firm, its directors, and partners have never been convicted or debarred by any ministry or GeM SPV.',
+    benefit: 'Essential compliance document fulfilling Packet-A technical qualification across every Indian public procurement portal.',
+    scrutinyFocus: 'Executed on appropriate non-judicial stamp paper, duly notarized with advocate registration number and date of swearing.',
+  },
+  'ca-turnover': {
+    id: 'ca-turnover',
+    ruleRef: 'ICAI Guidelines on UDIN & GFR 2017 Rule 173(v)',
+    purpose: 'Chartered Accountant certified statement validating annual audited revenues for the past three financial years.',
+    benefit: 'Satisfies mandatory average annual turnover requirement (usually 30% to 50% of estimated tender value) without dispute.',
+    scrutinyFocus: 'Must carry a valid 18-digit Unique Document Identification Number (UDIN) verifiable on the ICAI portal by tender evaluation officers.',
+  },
+  'solvency-certificate': {
+    id: 'solvency-certificate',
+    ruleRef: 'CPWD Works Manual Section 19 & State PWD Code Rule 8',
+    purpose: 'Official banker declaration confirming bidder enjoys sound financial standing and credit facility to finance project execution.',
+    benefit: 'Validates capital liquidity to execute contracts without financial distress; mandatory for EPC and high-value civil contracts.',
+    scrutinyFocus: 'Issued by a Scheduled Commercial Bank within 6 months of NIT release, addressed specifically to the tendering authority.',
+  },
+  'past-experience': {
+    id: 'past-experience',
+    ruleRef: 'GFR 2017 Rule 173(i) & CVC Guidelines on Pre-Qualification Criteria',
+    purpose: 'Verifiable historical proof that bidder has successfully completed similar technical works meeting the 80%/50%/40% three-tier value rule.',
+    benefit: 'Primary scoring criterion in Packet-A technical evaluation; protects bid against arbitrary disqualification.',
+    scrutinyFocus: 'Copies of work orders accompanied by end-user satisfaction completion certificates with contract value, date, and designation of officer.',
+  },
+  'class3-dsc': {
+    id: 'class3-dsc',
+    ruleRef: 'Information Technology Act 2000 Section 35 & CCA India Encryption Guidelines',
+    purpose: 'Asymmetric 2048-bit cryptographic key pair (Signing + Encryption) used to digitally lock bids and sign portal transactions.',
+    benefit: 'Legally equivalent to physical handwritten signatures under Section 4 of IT Act 2000; ensures bid privacy until commercial opening.',
+    scrutinyFocus: 'Valid FIPS-140-2 Level 2 cryptographic USB token; DSC certificate mapped to authorized director or partner with active validity.',
+  },
+  'local-content-mii': {
+    id: 'local-content-mii',
+    ruleRef: 'Public Procurement (Preference to Make in India) Order 2017 (DPIIT)',
+    purpose: 'Self-declaration or CA certificate certifying percentage of local value addition in goods/services supplied to government.',
+    benefit: 'Grants Class-I (>=50%) or Class-II (>=20%) local supplier status, securing purchase preference against foreign or non-local bidders.',
+    scrutinyFocus: 'Detailed calculation of domestic inputs vs imported components; required from statutory auditor if bid value exceeds ₹10 Crores.',
+  },
+};
