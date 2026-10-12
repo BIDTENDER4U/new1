@@ -34,6 +34,13 @@ for (const article of BLOG_ARTICLES) {
   };
 }
 
+if (ALL_SEO_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders']) {
+  ALL_SEO_ROUTES['/blog/fssai-license-government-food-tenders-guide'] = {
+    ...ALL_SEO_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders'],
+    canonical: `${CANONICAL_BASE}/blog/fssai-licence-mandate-food-canteen-tenders`
+  };
+}
+
 function generate404Html(reqPath: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -607,9 +614,9 @@ Strictly output raw valid JSON only without markdown or backticks.`;
   app.get('/robots.txt', (req: Request, res: Response) => {
     const robotsPath = path.resolve(process.cwd(), 'public', 'robots.txt');
     if (fs.existsSync(robotsPath)) {
-      res.type('text/plain').sendFile(robotsPath);
+      res.type('text/plain; charset=utf-8').sendFile(robotsPath);
     } else {
-      res.type('text/plain').send('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /#admin-leads\n\nSitemap: https://www.bidtender4u.com/sitemap.xml\n');
+      res.type('text/plain; charset=utf-8').send('User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://www.bidtender4u.com/sitemap.xml\n');
     }
   });
 
@@ -617,7 +624,8 @@ Strictly output raw valid JSON only without markdown or backticks.`;
   app.get('/sitemap.xml', (req: Request, res: Response) => {
     const sitemapPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');
     if (fs.existsSync(sitemapPath)) {
-      res.type('application/xml').sendFile(sitemapPath);
+      res.set('Content-Type', 'application/xml; charset=utf-8');
+      res.sendFile(sitemapPath);
     } else {
       res.status(404).send('Sitemap not found');
     }

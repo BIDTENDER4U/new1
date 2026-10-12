@@ -442,7 +442,7 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
     ],
     relatedLinks: [
       { label: 'GeM Startup Waiver Rule 173(i)', path: '/blog/gem-startup-waiver-rule-173i-analysis', desc: 'Analysis of DPIIT startup turnover exemption.' },
-      { label: 'FSSAI License for Food Tenders', path: '/blog/fssai-license-government-food-tenders-guide', desc: 'Mandatory food safety compliance in government bids.' },
+      { label: 'FSSAI License for Food Tenders', path: '/blog/fssai-licence-mandate-food-canteen-tenders', desc: 'Mandatory food safety compliance in government bids.' },
       { label: 'GFR 170 MSME EMD Exemption Guide', path: '/blog/gfr-170-msme-emd-exemption-guide', desc: 'How to claim 100% EMD waiver legally.' },
       { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Professional bid preparation services.' }
     ],
@@ -493,5 +493,87 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
       { label: 'Contact Us', path: '/contact-us', desc: 'Visit our Ahmedabad HQ or call our desk.' }
     ],
     pageType: 'service'
+  },
+  '/about-us': {
+    path: '/about-us',
+    title: 'About Us & Company Credentials | Bid Tender 4 U',
+    description: 'Learn about Bid Tender 4 U, leading government tender consultancy and GeM bidding agency headquartered in Isanpur, Ahmedabad, Gujarat with 1,500+ analyzed bids.',
+    keywords: 'about bid tender 4 u, tender consultancy ahmedabad, gem consultant ahmedabad, government tender advisory, public procurement experts, baldev singh ahmedabad',
+    canonical: `${CANONICAL_BASE}/about-us`,
+    breadcrumbTitle: 'About Us',
+    h1: 'About Bid Tender 4 U - All India Tender Consultancy',
+    lead: 'Trusted e-procurement advisory, GeM 4.0 vendor enrollment, and tender bid management firm headquartered in Isanpur, Ahmedabad, Gujarat.',
+    keyPoints: [
+      'Headquartered in Isanpur, Ahmedabad, Gujarat with Pan-India service coverage across 28 states and 50+ key cities.',
+      'Proven track record with 1,500+ government tenders analyzed and 99.4% procedural bid acceptance rate.',
+      'Cumulative bid value handled in excess of ₹500 Crores across central ministries, state boards, railways, and PSUs.',
+      'Comprehensive procedural guidance on GFR 2017 Rule 170 EMD exemptions, DPIIT startup waivers, and ISO compliance.',
+      'Direct client hotline: +91 9726407267 | Email: Tendergem42@gmail.com.'
+    ],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Full technical packaging and submission support.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory GeM seller and OEM onboarding.' },
+      { label: 'Client Success Stories', path: '/stories', desc: 'Real case studies of won government contracts.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Visit our Ahmedabad HQ or submit a tender document.' }
+    ],
+    pageType: 'website'
+  },
+  '/contact-us': {
+    path: '/contact-us',
+    title: 'Contact Us & Tender Document Intake Desk | Bid Tender 4 U',
+    description: 'Contact Bid Tender 4 U for government tender review, GeM portal assistance, and NIT feasibility audits. Registered office: Isanpur, Ahmedabad, Gujarat. Phone: +91 9726407267.',
+    keywords: 'contact bid tender 4 u, tender consultant phone number, submit tender document, ahmedabad tender consultancy office, gem support helpline',
+    canonical: `${CANONICAL_BASE}/contact-us`,
+    breadcrumbTitle: 'Contact Us',
+    h1: 'Contact Us & Submit Tender Document for Audit',
+    lead: 'Connect directly with senior tender bidding officers in Ahmedabad, Gujarat for express preliminary eligibility review, EMD assessment, and GeM onboarding.',
+    keyPoints: [
+      'Registered Office: Murlidhar 3, Near Jay Bholenath Sales, Isanpur, Ahmedabad, Gujarat 382440.',
+      'Official Helpline: +91 97264 07267 (Calls & WhatsApp desk).',
+      'Official Email: Tendergem42@gmail.com.',
+      'Consultancy Working Hours: Monday to Saturday, 9:30 AM to 7:30 PM IST.',
+      'Express 4-hour preliminary eligibility audit for urgent closing tenders.'
+    ],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Full bid preparation and technical folder review.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Primary seller, OEM and reseller onboarding checklist.' },
+      { label: 'Free Tender Summary', path: '/free-tender-summary', desc: 'Instant extraction of key tender parameters.' },
+      { label: 'Payment Details', path: '/payment-details', desc: 'Official UPI and banking payment information.' }
+    ],
+    pageType: 'website'
+  },
+  '/about': {
+    path: '/about-us',
+    title: 'About Us & Company Credentials | Bid Tender 4 U',
+    description: 'Learn about Bid Tender 4 U, leading government tender consultancy and GeM bidding agency headquartered in Isanpur, Ahmedabad, Gujarat with 1,500+ analyzed bids.',
+    canonical: `${CANONICAL_BASE}/about-us`,
+    breadcrumbTitle: 'About Us',
+    h1: 'About Bid Tender 4 U - All India Tender Consultancy',
+    lead: 'Trusted e-procurement advisory and tender bid management firm.',
+    keyPoints: [
+      'Headquartered in Isanpur, Ahmedabad, Gujarat with nationwide coverage.',
+      'Over 1,500+ government tenders analyzed with 99.4% acceptance rate.'
+    ],
+    relatedLinks: [
+      { label: 'Contact Us', path: '/contact-us', desc: 'Get in touch with our specialists.' }
+    ],
+    pageType: 'website'
+  },
+  '/contact': {
+    path: '/contact-us',
+    title: 'Contact Us & Tender Document Intake Desk | Bid Tender 4 U',
+    description: 'Contact Bid Tender 4 U for government tender review, GeM portal assistance, and NIT feasibility audits. Phone: +91 9726407267.',
+    canonical: `${CANONICAL_BASE}/contact-us`,
+    breadcrumbTitle: 'Contact Us',
+    h1: 'Contact Us & Submit Tender Document for Audit',
+    lead: 'Connect with senior tender bidding officers in Ahmedabad, Gujarat.',
+    keyPoints: [
+      'Registered Office: Isanpur, Ahmedabad, Gujarat 382440.',
+      'Official Helpline: +91 97264 07267.'
+    ],
+    relatedLinks: [
+      { label: 'About Us', path: '/about-us', desc: 'Company credentials and office location.' }
+    ],
+    pageType: 'website'
   }
 };
