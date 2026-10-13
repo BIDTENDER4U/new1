@@ -21,6 +21,11 @@ interface StoredInquiry {
   estimated_value?: string;
   message?: string;
   file_name?: string;
+  file_size?: string;
+  file_url?: string;
+  file_mime?: string;
+  has_file?: boolean;
+  file_data?: string;
   created_at: string;
   status: 'New' | 'In Review' | 'Contacted' | 'Bid Prepared';
 }
@@ -83,7 +88,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
 
   const handleExportCSV = () => {
     if (inquiries.length === 0) return;
-    const headers = ['ID', 'Date', 'Name', 'Company', 'Phone', 'Email', 'City', 'Category', 'Service', 'Portal', 'Ref No', 'Est Value', 'Status', 'Message'];
+    const headers = ['ID', 'Date', 'Name', 'Company', 'Phone', 'Email', 'City', 'Category', 'Service', 'Portal', 'Ref No', 'Est Value', 'Status', 'File Name', 'Document Download Link', 'Message'];
     const rows = inquiries.map((i) => [
       i.id,
       new Date(i.created_at).toISOString(),
@@ -98,6 +103,8 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
       i.reference_number || '',
       i.estimated_value || '',
       i.status,
+      `"${(i.file_name || '').replace(/"/g, '""')}"`,
+      i.file_name ? `"${window.location.origin}/api/inquiries/${i.id}/document"` : '""',
       `"${(i.message || '').replace(/"/g, '""')}"`,
     ]);
 
@@ -320,10 +327,14 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
 
                       <div className="pt-2 flex items-center gap-2">
                         <a
-                          href={getWhatsAppUrl(`Hello ${item.name}, this is Bid Tender 4 U regarding your tender inquiry (${item.id}).`)}
+                          href={getWhatsAppUrl(
+                            item.file_name
+                              ? `Hello ${item.name}, this is Bid Tender 4 U regarding your uploaded tender document "${item.file_name}" (Ref: ${item.id}). We have completed the manual evaluation. Here is your summary:`
+                              : `Hello ${item.name}, this is Bid Tender 4 U regarding your tender inquiry (${item.id}).`
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 text-[11px] font-bold flex items-center gap-1 shadow-xs"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 text-[11px] font-bold flex items-center gap-1 shadow-xs transition-colors"
                         >
                           <MessageCircle className="w-3 h-3" />
                           <span>WhatsApp Client</span>
@@ -344,10 +355,52 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                     </div>
                   )}
 
+                  {/* Client Attached Tender Document Box */}
                   {item.file_name && (
-                    <div className="mt-2 text-xs text-slate-600 flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Attached Tender File: <strong className="text-slate-900">{item.file_name}</strong></span>
+                    <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/90 to-amber-100/50 border border-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-xs">
+                          <FileText className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                              Client Uploaded Tender Document
+                            </span>
+                            {item.file_size && (
+                              <span className="text-[11px] text-slate-600 font-bold font-mono">
+                                {item.file_size}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs font-black text-slate-900 truncate mt-1" title={item.file_name}>
+                            📄 {item.file_name}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <a
+                          href={`/api/inquiries/${item.id}/document?download=1`}
+                          download={item.file_name}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download Document</span>
+                        </a>
+                        <a
+                          href={`/api/inquiries/${item.id}/document?view=1`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+                          title="Open or preview in new tab"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Preview</span>
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>

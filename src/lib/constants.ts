@@ -508,4 +508,16 @@ export const FAQS_DATA: FAQItem[] = [
     question: 'Do you guarantee that my company will win the tender?',
     answer: 'No consultancy can or should guarantee a tender win, as award decisions are legally determined strictly by the tendering government authority based on technical qualification and commercial evaluation. What Bid Tender 4 U guarantees is 100% procedural and technical compliance so that your bid is never rejected on clerical, documentation, or portal submission errors.',
   },
+  {
+    id: 'faq-8',
+    category: 'Documents & EMD',
+    question: 'What is the DPIIT Startup India turnover and experience exemption rule?',
+    answer: 'Under Ministry of Finance procurement rules and Rule 173(i) of General Financial Rules (GFR) 2017, recognized DPIIT startups are entitled to relaxation in prior turnover and prior experience criteria in public procurement, provided they meet required technical and quality specifications. In GeM, this is implemented as the Startup Relaxation flag. Bid Tender 4 U verifies your DPIIT certificate validity and drafts compliant representation to ensure buyer acceptance.',
+  },
+  {
+    id: 'faq-9',
+    category: 'Submission & DSC',
+    question: 'How does the Reverse Auction (RA) work in GeM and CPPP tenders?',
+    answer: 'A Reverse Auction (RA) is an online dynamic downward bidding mechanism conducted after technical and commercial evaluation. In GeM, RA is triggered for bids exceeding specified thresholds or when multiple qualified vendors participate. Vendors submit progressively lower bids in real-time within a countdown window. Bid Tender 4 U provides strategic decrement models to help you compete effectively without eroding essential profit margins.',
+  },
 ];

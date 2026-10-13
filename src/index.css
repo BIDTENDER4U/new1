@@ -348,3 +348,66 @@ div[role="dialog"] > div:last-child,
   color: #1D3557 !important;
   box-shadow: 0 20px 25px -5px rgba(29, 53, 87, 0.15), 0 8px 10px -6px rgba(29, 53, 87, 0.1) !important;
 }
+
+/* ==========================================================================
+   7. Custom Pulse Keyframe Animations for High-Converting CTAs
+   - Floating WhatsApp subtle beacon pulse
+   - Submit Inquiry attention pulse with soft shadow breathing
+   ========================================================================== */
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.35), 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 14px 28px -4px rgba(16, 185, 129, 0.5), 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes inquiry-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px 0 rgba(29, 53, 87, 0.22), 0 0 0 0 rgba(212, 175, 112, 0.45);
+  }
+  50% {
+    transform: scale(1.025);
+    box-shadow: 0 8px 20px 0 rgba(29, 53, 87, 0.32), 0 0 0 8px rgba(212, 175, 112, 0);
+  }
+}
+
+@keyframes amber-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px 0 rgba(245, 158, 11, 0.25), 0 0 0 0 rgba(245, 158, 11, 0.45);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 8px 18px 0 rgba(245, 158, 11, 0.4), 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: subtle-pulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-subtle:hover {
+  animation-play-state: paused;
+}
+
+.animate-inquiry-pulse {
+  animation: inquiry-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-inquiry-pulse:hover {
+  animation-play-state: paused;
+}
+
+.animate-amber-pulse {
+  animation: amber-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-amber-pulse:hover {
+  animation-play-state: paused;
+}
+

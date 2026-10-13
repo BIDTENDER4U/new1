@@ -6,11 +6,12 @@ import { database } from './server/db';
 import { ai, queryTenderGrounding, queryMapsGrounding } from './server/gemini';
 import { ROUTES_SEO, RouteMetadata, CANONICAL_BASE } from './src/lib/seoData';
 import { BLOG_ARTICLES } from './src/lib/blogArticlesData';
+import { STATES_DATA, CITIES_DATA } from './src/lib/locationData';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxY_SoCpfIXTd_G6lK4MyJlyB8bTjYeqEO0cseLOnun0Z-voT-NhthJbjb5WbfrLZaH/exec';
 
-// Build unified registry of all public SEO routes including blog articles
+// Build unified registry of all public SEO routes including blog articles and locations
 const ALL_SEO_ROUTES: Record<string, RouteMetadata> = { ...ROUTES_SEO };
 
 for (const article of BLOG_ARTICLES) {
@@ -38,6 +39,64 @@ if (ALL_SEO_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders']) {
   ALL_SEO_ROUTES['/blog/fssai-license-government-food-tenders-guide'] = {
     ...ALL_SEO_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders'],
     canonical: `${CANONICAL_BASE}/blog/fssai-licence-mandate-food-canteen-tenders`
+  };
+}
+
+// Register all state location landing hubs
+for (const s of STATES_DATA) {
+  const locPath = `/locations/${s.id}`;
+  ALL_SEO_ROUTES[locPath] = {
+    path: locPath,
+    title: `${s.name} Government Tenders & GeM Consultancy | Bid Tender 4 U`,
+    description: `Complete e-procurement bidding consultancy for ${s.name} state tenders (${s.portalName}). EMD exemption, Class-3 DSC, and GeM onboarding for ${s.keyCities.join(', ')}.`,
+    keywords: `${s.name.toLowerCase()} tenders, ${s.portalName.toLowerCase()}, gem consultant ${s.name.toLowerCase()}, e-procurement ${s.name.toLowerCase()}`,
+    canonical: `${CANONICAL_BASE}${locPath}`,
+    breadcrumbTitle: s.name,
+    h1: `${s.name} Government Tender Bidding & GeM Services`,
+    lead: s.overview,
+    keyPoints: [
+      `Official State Portal: ${s.portalName}.`,
+      `Annual Tender Volume: ${s.tenderVolume}.`,
+      `Key Coverage: ${s.keyCities.join(', ')}.`,
+      `Major Departments: ${s.majorDepartments.join(', ')}.`,
+      s.emdExemptionNote,
+    ],
+    relatedLinks: [
+      { label: 'All India Locations Hub', path: '/locations', desc: 'Browse all 28 states and 50+ cities.' },
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging & technical folder audit.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Primary seller, OEM & reseller onboarding.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk in Ahmedabad.' },
+    ],
+    pageType: 'service',
+  };
+}
+
+// Register all city location landing hubs
+for (const c of CITIES_DATA) {
+  const locPath = `/locations/${c.id}`;
+  ALL_SEO_ROUTES[locPath] = {
+    path: locPath,
+    title: `${c.name} Government Tender Bidding Consultancy | Bid Tender 4 U`,
+    description: `Professional tender bidding consultancy and GeM portal assistance in ${c.name}, ${c.state}. Support for municipal tenders, railways, PSUs, and defense contracts.`,
+    keywords: `${c.name.toLowerCase()} tender consultant, gem registration ${c.name.toLowerCase()}, ${(c.localSeoKeywords || []).join(', ').toLowerCase()}`,
+    canonical: `${CANONICAL_BASE}${locPath}`,
+    breadcrumbTitle: c.name,
+    h1: `${c.name} Tender Bidding Consultancy & GeM Services`,
+    lead: `Comprehensive tender bidding advisory, document compliance, and GeM onboarding for government vendors in ${c.name}, ${c.state}.`,
+    keyPoints: [
+      `Location: ${c.name}, ${c.state} (${c.region} Region).`,
+      `Primary Procurement Portal: ${c.portal}.`,
+      `Active Tenders Estimate: ${c.activeTendersEstimate}.`,
+      `Key Authorities: ${c.keyAuthorities.join(', ')}.`,
+      `Top Sectors: ${c.topSectors.join(', ')}.`,
+    ],
+    relatedLinks: [
+      { label: 'All India Locations Hub', path: '/locations', desc: 'Browse all 28 states and 50+ cities.' },
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging & technical folder audit.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Primary seller, OEM & reseller onboarding.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Submit tender document for preliminary audit.' },
+    ],
+    pageType: 'service',
   };
 }
 
@@ -293,20 +352,22 @@ async function bootstrap() {
         file_data = '',
       } = req.body;
 
-      // Validate mandatory fields
-      if (!name || !phone || !company) {
+      // Validate mandatory fields: Name and Phone are required
+      if (!name || !phone) {
         return res.status(400).json({
           success: false,
-          error: 'Name, company, and phone are mandatory fields.',
+          error: 'Name and phone/WhatsApp number are mandatory fields.',
         });
       }
 
-      // Persist to local database
+      const effectiveCompany = company && company.trim().length > 0 ? company.trim() : `${name.trim()} (Direct Bidder)`;
+
+      // Persist to local database (including uploaded document)
       const record = database.insertInquiry({
         form_type,
-        name,
-        company,
-        phone,
+        name: name.trim(),
+        company: effectiveCompany,
+        phone: phone.trim(),
         email,
         city,
         business_type,
@@ -318,17 +379,19 @@ async function bootstrap() {
         closing_date,
         message,
         file_name,
+        file_data,
       });
 
-      console.log(`[Lead Stored] New inquiry ID: ${record.id} from ${name} (${company})`);
+      console.log(`[Lead Stored] New inquiry ID: ${record.id} from ${name} (${effectiveCompany}) with file: ${record.file_name || 'none'}`);
 
       // Forward to Google Apps Script webhook in background
       try {
+        const docDownloadUrl = record.file_url ? `${req.protocol}://${req.get('host')}${record.file_url}` : '';
         const payload = new URLSearchParams({
           form_type,
-          name,
-          company,
-          phone,
+          name: name.trim(),
+          company: effectiveCompany,
+          phone: phone.trim(),
           email,
           city,
           business_type,
@@ -337,9 +400,11 @@ async function bootstrap() {
           reference_number,
           service,
           closing_date,
-          message,
-          file_name,
-          file_data,
+          message: `${message}${docDownloadUrl ? `\n\n[Document Download Link]: ${docDownloadUrl}` : ''}`,
+          file_name: record.file_name || file_name || '',
+          file_url: docDownloadUrl,
+          // Only send file_data in urlencoded if under 1.5MB to avoid Google Apps Script buffer limits
+          file_data: file_data && file_data.length < 1500000 ? file_data : '',
         });
 
         fetch(APPS_SCRIPT_URL, {
@@ -356,7 +421,7 @@ async function bootstrap() {
       return res.status(201).json({
         success: true,
         inquiryId: record.id,
-        message: 'Your inquiry has been registered successfully. Our senior tender officer will contact you shortly.',
+        message: 'Your inquiry and tender document have been registered successfully. Our senior tender officer will contact you shortly.',
         record,
       });
     } catch (err: any) {
@@ -474,6 +539,33 @@ async function bootstrap() {
     }
 
     return res.json({ success: true, record: updated });
+  });
+
+  // API Route: Download or View Client Uploaded Tender Document
+  app.get(['/api/inquiries/:id/document', '/api/inquiries/:id/download'], (req: Request, res: Response) => {
+    const { id } = req.params;
+    const doc = database.getDocumentFile(id);
+
+    if (!doc) {
+      return res.status(404).json({
+        success: false,
+        error: `Tender document not found for inquiry ${id}. The client may not have attached a binary file.`,
+      });
+    }
+
+    const isInline = req.query.view === '1' || req.query.inline === '1';
+    const disposition = isInline ? 'inline' : 'attachment';
+
+    res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(doc.fileName)}"`);
+    res.setHeader('Content-Type', doc.mimeType || 'application/octet-stream');
+
+    if (doc.filePath) {
+      return res.sendFile(doc.filePath);
+    } else if (doc.buffer) {
+      return res.send(doc.buffer);
+    } else {
+      return res.status(404).json({ success: false, error: 'File content unavailable' });
+    }
   });
 
   // API Route: Real-Time Live Tender & Regulatory Radar (Google Search Grounding)
@@ -616,20 +708,28 @@ Strictly output raw valid JSON only without markdown or backticks.`;
     if (fs.existsSync(robotsPath)) {
       res.type('text/plain; charset=utf-8').sendFile(robotsPath);
     } else {
-      res.type('text/plain; charset=utf-8').send('User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://www.bidtender4u.com/sitemap.xml\n');
+      res.type('text/plain; charset=utf-8').send('User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://www.bidtender4u.com/sitemap-index.xml\nSitemap: https://www.bidtender4u.com/sitemap.xml\n');
     }
   });
 
-  // Explicit route: sitemap.xml
-  app.get('/sitemap.xml', (req: Request, res: Response) => {
-    const sitemapPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');
+  // Explicit route: XML Sitemaps (Sitemap Index & Individual Sitemaps)
+  app.get(['/sitemap.xml', '/sitemap-index.xml', '/sitemap-services.xml', '/sitemap-blog.xml', '/sitemap-locations.xml'], (req: Request, res: Response) => {
+    const filename = req.path.replace(/^\/+/, '');
+    const sitemapPath = path.resolve(process.cwd(), 'public', filename);
     if (fs.existsSync(sitemapPath)) {
-      res.set('Content-Type', 'application/xml; charset=utf-8');
+      res.set({
+        'Content-Type': 'application/xml; charset=utf-8',
+        'X-Robots-Tag': 'all',
+        'Cache-Control': 'public, max-age=0, must-revalidate',
+      });
       res.sendFile(sitemapPath);
     } else {
-      res.status(404).send('Sitemap not found');
+      res.status(404).type('text/plain').send(`Sitemap ${filename} not found`);
     }
   });
+
+  // Serve public assets (images, logos, manifests, favicons)
+  app.use(express.static(path.resolve(process.cwd(), 'public')));
 
   // Set up Vite in development or static serving in production
   let vite: any = null;
@@ -649,12 +749,14 @@ Strictly output raw valid JSON only without markdown or backticks.`;
   // Node.js Technical SEO Page Handler: Exact HTTP status codes (200 / 404),
   // unique page titles, meta descriptions, canonical URLs & pre-rendered HTML content
   app.get('*', async (req: Request, res: Response, next) => {
-    // Skip API or Vite internal dev assets
+    // Skip API or Vite internal dev assets and static media assets
     if (
       req.path.startsWith('/api') || 
       req.path.startsWith('/@') || 
       req.path.startsWith('/src') ||
-      req.path.startsWith('/node_modules')
+      req.path.startsWith('/images') ||
+      req.path.startsWith('/node_modules') ||
+      /\.(jpg|jpeg|png|svg|webp|gif|ico|woff2?|ttf|eot)$/i.test(req.path)
     ) {
       return next();
     }

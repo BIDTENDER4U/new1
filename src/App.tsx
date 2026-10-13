@@ -8,6 +8,7 @@ import { GeMProductListing } from './components/GeMProductListing';
 import { OEMServices } from './components/OEMServices';
 import { AboutUs } from './components/AboutUs';
 import { ServicesBento } from './components/ServicesBento';
+import { BiddingJourneyStepper } from './components/BiddingJourneyStepper';
 import { PortalsMatrix } from './components/PortalsMatrix';
 import { TenderInquirySection } from './components/TenderInquirySection';
 import { TenderInquiryModal } from './components/TenderInquiryModal';
@@ -27,6 +28,8 @@ import { StatutoryLettersModal } from './components/StatutoryLettersModal';
 import { LiveTenderRadarModal } from './components/LiveTenderRadarModal';
 import { GoogleMapsLocatorModal } from './components/GoogleMapsLocatorModal';
 import { PaymentDetailsModal } from './components/PaymentDetailsModal';
+import { SeoHead } from './components/SeoHead';
+import { usePageSeo, applySeoToDocument, resolvePageMetadata } from './lib/seoManager';
 import { ArrowLeft, ArrowRight, ShieldCheck, Phone, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from './lib/constants';
 import { ROUTES_SEO } from './lib/seoData';
@@ -74,33 +77,16 @@ export default function App() {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedLocationId, setSelectedLocationId] = useState<string>('all-india');
 
-  // Helper to dynamically update client-side document head metadata
-  const updateDocumentHead = (page: PageId, slug?: string) => {
-    let pathKey = '/' + (page === 'home' ? '' : page);
-    if (page === 'blog' && slug) {
-      pathKey = `/blog/${slug}`;
-    } else if (page === 'gem-documents') {
-      pathKey = '/gem-registration';
-    } else if (page === 'services') {
-      pathKey = '/tender-bidding-consultancy';
-    } else if (page === 'contact') {
-      pathKey = '/contact-us';
-    }
+  // React Hook: Dynamically synchronize canonical, Open Graph, Twitter cards, and Schema.org JSON-LD
+  usePageSeo({
+    page: currentPage,
+    articleSlug: blogArticleSlug,
+  });
 
-    const meta = ROUTES_SEO[pathKey] || ROUTES_SEO['/'];
-    if (meta) {
-      document.title = meta.title;
-      const descEl = document.querySelector('meta[name="description"]');
-      if (descEl) descEl.setAttribute('content', meta.description);
-      const canonEl = document.querySelector('link[rel="canonical"]');
-      if (canonEl) canonEl.setAttribute('href', meta.canonical);
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) ogTitle.setAttribute('content', meta.title);
-      const ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc) ogDesc.setAttribute('content', meta.description);
-      const ogUrl = document.querySelector('meta[property="og:url"]');
-      if (ogUrl) ogUrl.setAttribute('content', meta.canonical);
-    }
+  // Imperative helper for immediate document head synchronization on route change
+  const updateDocumentHead = (page: PageId, slug?: string) => {
+    const meta = resolvePageMetadata(page, slug);
+    applySeoToDocument(meta);
   };
 
   // Synchronize with URL pathname and hash on load, popstate, and hashchange
@@ -147,6 +133,19 @@ export default function App() {
         setBlogArticleSlug(slug);
         setCurrentPage('blog');
         updateDocumentHead('blog', slug);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Handle locations paths: /locations/slug or #locations-slug
+      if (pathname.startsWith('locations/') || hash.startsWith('locations-')) {
+        const locId = pathname.startsWith('locations/')
+          ? pathname.replace('locations/', '')
+          : hash.replace('locations-', '');
+        setSelectedLocationId(locId);
+        setCurrentPage('locations');
+        setBlogArticleSlug(undefined);
+        updateDocumentHead('locations', locId);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -224,6 +223,10 @@ export default function App() {
     const clean = page.toLowerCase().replace(/^\/+|\/+$/g, '');
     if (clean === 'payment' || clean === 'payment-details' || clean === 'pay') {
       setIsPaymentModalOpen(true);
+      return;
+    }
+    if (clean === 'free-tender-summary' || clean === 'tender-summary' || clean === 'free-summary' || clean === 'summary') {
+      setIsFreeSummaryOpen(true);
       return;
     }
     if (clean === 'gem-registration' || clean === 'gem-documents') {
@@ -460,6 +463,9 @@ export default function App() {
               </div>
             </div>
 
+            {/* 7-Stage Bidding Journey Progress Stepper */}
+            <BiddingJourneyStepper onOpenInquiry={handleOpenInquiryForm} />
+
             <ServicesBento onSelectService={handleSelectServiceFromBento} />
 
             {/* Quick Action Bottom Strip */}
@@ -471,7 +477,7 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
                   onClick={() => handleOpenInquiryForm()}
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors cursor-pointer shadow-sm"
+                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors cursor-pointer shadow-sm animate-amber-pulse"
                 >
                   Submit Inquiry Now
                 </button>

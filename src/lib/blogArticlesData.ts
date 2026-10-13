@@ -238,10 +238,10 @@ export const BLOG_ARTICLES: BlogPostItem[] = [
     date: 'October 2026',
     readTime: '10 min read',
     featured: false,
-    metaDescription: 'Complete guide on GFR 2017 Rule 170 MSME EMD exemptions, Bid Securing Declaration formatting, and overcoming wrongful technical rejections.',
+    metaDescription: 'Claim 100% MSME EMD Exemption under GFR 170. Valid Bid Securing Declaration templates, Udyam NIC code guidance & legal defense against wrongful tender rejections.',
     keywords: [
-      'GFR Rule 170',
       'MSME EMD Exemption',
+      'GFR Rule 170',
       'Bid Securing Declaration Format',
       'Udyam NIC Code Mismatch',
       'Earnest Money Deposit Waiver',
@@ -333,8 +333,9 @@ export const BLOG_ARTICLES: BlogPostItem[] = [
     date: 'October 2026',
     readTime: '8 min read',
     featured: false,
-    metaDescription: 'Master the GeM OEM Authorization Code (MAF) rules, brand approval, reseller pairing, and avoid disqualifications under GeM GTC Clause 4.',
+    metaDescription: 'Master GeM OEM Authorization rules, brand approval & Quadrant-1 reseller pairing. Avoid disqualifications under GeM GTC Clause 4 with our step-by-step guide.',
     keywords: [
+      'GeM OEM Authorization',
       'GeM OEM Authorization Code',
       'Manufacturer Authorization Form',
       'GeM GTC Clause 4',

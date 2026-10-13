@@ -27,6 +27,7 @@ import {
 import { BlogPostItem } from '../types';
 import { BLOG_ARTICLES, BLOG_CATEGORIES } from '../lib/blogArticlesData';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
+import { usePageSeo } from '../lib/seoManager';
 
 interface ProcurementBlogProps {
   onNavigate: (page: string) => void;
@@ -59,6 +60,13 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
     return BLOG_ARTICLES.find((a) => a.slug === activeArticleSlug) || null;
   }, [activeArticleSlug]);
 
+  // Dynamically manage canonical tags, Open Graph meta-tags, and Schema.org JSON-LD
+  usePageSeo({
+    page: 'blog',
+    articleSlug: activeArticleSlug || undefined,
+    article: activeArticle,
+  });
+
   // Filtered articles list
   const filteredArticles = useMemo(() => {
     return BLOG_ARTICLES.filter((article) => {
@@ -81,13 +89,17 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
 
   const handleSelectArticle = (slug: string) => {
     setActiveArticleSlug(slug);
-    window.location.hash = `#blog-${slug}`;
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', `/blog/${slug}`);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToFeed = () => {
     setActiveArticleSlug(null);
-    window.location.hash = '#blog';
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/blog');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -105,57 +117,7 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
     }
   };
 
-  // Embed Schema.org JSON-LD for rich SEO snippets
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const scriptId = 'procurement-blog-jsonld';
-      let scriptTag = document.getElementById(scriptId) as HTMLScriptElement | null;
-      if (!scriptTag) {
-        scriptTag = document.createElement('script');
-        scriptTag.id = scriptId;
-        scriptTag.type = 'application/ld+json';
-        document.head.appendChild(scriptTag);
-      }
 
-      if (activeArticle) {
-        scriptTag.textContent = JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: activeArticle.title,
-          description: activeArticle.metaDescription,
-          author: {
-            '@type': 'Person',
-            name: activeArticle.author,
-            jobTitle: activeArticle.authorRole,
-          },
-          publisher: {
-            '@type': 'Organization',
-            name: BUSINESS_INFO.legalName,
-            url: 'https://www.bidtender4u.com',
-          },
-          datePublished: '2026-10-01',
-          dateModified: '2026-10-08',
-          keywords: activeArticle.keywords.join(', '),
-          mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': `https://www.bidtender4u.com/#blog-${activeArticle.slug}`,
-          },
-        });
-      } else {
-        scriptTag.textContent = JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'Blog',
-          name: 'Bid Tender 4 U - Government Procurement & Regulatory Analysis Blog',
-          description: 'Authoritative analysis on Indian government tenders, GeM 4.0 portal rules, GFR 2017 amendments, FSSAI compliance, and DPIIT startup waivers.',
-          publisher: {
-            '@type': 'Organization',
-            name: BUSINESS_INFO.legalName,
-            url: 'https://www.bidtender4u.com',
-          },
-        });
-      }
-    }
-  }, [activeArticle]);
 
   return (
     <div className="bg-[#F8FAFC] text-slate-900 min-h-screen">
@@ -390,7 +352,7 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
                       className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <FileText className="w-4 h-4" />
-                      <span>Get Free Tender Summary</span>
+                      <span>Get Free Tender Summary on WhatsApp</span>
                     </button>
 
                     <a
@@ -761,7 +723,7 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
                   className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <FileText className="w-4 h-4" />
-                  <span>Get Free Tender Summary</span>
+                  <span>Get Free Tender Summary on WhatsApp</span>
                 </button>
 
                 <a

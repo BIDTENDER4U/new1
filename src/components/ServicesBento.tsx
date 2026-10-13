@@ -41,6 +41,16 @@ export const ServicesBento: React.FC<ServicesBentoProps> = ({ onSelectService })
           <p className="mt-4 text-slate-600 text-base sm:text-lg font-medium leading-relaxed">
             We don't just fill forms; we perform thorough technical risk mitigation, financial criteria validation, and compliant bid packaging to maximize your win probability.
           </p>
+          <div className="flex flex-wrap items-center gap-3 mt-5">
+            <a
+              href="#bidding-journey"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-[#1D3557] text-xs font-bold transition-all shadow-2xs group"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>Explore The 7-Stage Bidding Journey Stepper</span>
+              <ArrowUpRight className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+          </div>
         </div>
 
         {/* Asymmetric Bento Grid: White cards with thin soft-slate borders (#D9E0E8) */}

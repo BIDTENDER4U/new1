@@ -2,10 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { ROUTES_SEO, RouteMetadata } from '../src/lib/seoData';
 import { BLOG_ARTICLES } from '../src/lib/blogArticlesData';
+import { STATES_DATA, CITIES_DATA } from '../src/lib/locationData';
 
 const CANONICAL_BASE = 'https://www.bidtender4u.com';
 
-// Build complete routes dictionary including blog articles
+// Build complete routes dictionary including blog articles and locations
 const ALL_ROUTES: Record<string, RouteMetadata> = { ...ROUTES_SEO };
 
 for (const article of BLOG_ARTICLES) {
@@ -34,6 +35,63 @@ if (ALL_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders']) {
   ALL_ROUTES['/blog/fssai-license-government-food-tenders-guide'] = {
     ...ALL_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders'],
     canonical: `${CANONICAL_BASE}/blog/fssai-licence-mandate-food-canteen-tenders`
+  };
+}
+
+// Add state location hubs
+for (const s of STATES_DATA) {
+  const locPath = `/locations/${s.id}`;
+  ALL_ROUTES[locPath] = {
+    path: locPath,
+    title: `${s.name} Government Tenders & GeM Consultancy | Bid Tender 4 U`,
+    description: `Complete e-procurement bidding consultancy for ${s.name} state tenders (${s.portalName}). EMD exemption, Class-3 DSC, and GeM onboarding for ${s.keyCities.join(', ')}.`,
+    keywords: `${s.name.toLowerCase()} tenders, ${s.portalName.toLowerCase()}, gem consultant ${s.name.toLowerCase()}`,
+    canonical: `${CANONICAL_BASE}${locPath}`,
+    breadcrumbTitle: s.name,
+    h1: `${s.name} Government Tender Bidding & GeM Services`,
+    lead: s.overview,
+    keyPoints: [
+      `Official State Portal: ${s.portalName}.`,
+      `Annual Tender Volume: ${s.tenderVolume}.`,
+      `Key Coverage: ${s.keyCities.join(', ')}.`,
+      s.emdExemptionNote,
+    ],
+    relatedLinks: [
+      { label: 'All India Locations Hub', path: '/locations', desc: 'Browse all 28 states and 50+ cities.' },
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory vendor onboarding.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' }
+    ],
+    pageType: 'service'
+  };
+}
+
+// Add city location hubs
+for (const c of CITIES_DATA) {
+  const locPath = `/locations/${c.id}`;
+  ALL_ROUTES[locPath] = {
+    path: locPath,
+    title: `${c.name} Government Tender Bidding Consultancy | Bid Tender 4 U`,
+    description: `Professional tender bidding consultancy and GeM portal assistance in ${c.name}, ${c.state}. Support for municipal tenders, railways, PSUs, and defense contracts.`,
+    keywords: `${c.name.toLowerCase()} tender consultant, gem registration ${c.name.toLowerCase()}, ${(c.localSeoKeywords || []).join(', ').toLowerCase()}`,
+    canonical: `${CANONICAL_BASE}${locPath}`,
+    breadcrumbTitle: c.name,
+    h1: `${c.name} Tender Bidding Consultancy & GeM Services`,
+    lead: `Comprehensive tender bidding advisory, document compliance, and GeM onboarding for government vendors in ${c.name}, ${c.state}.`,
+    keyPoints: [
+      `Location: ${c.name}, ${c.state} (${c.region} Region).`,
+      `Primary Procurement Portal: ${c.portal}.`,
+      `Active Tenders Estimate: ${c.activeTendersEstimate}.`,
+      `Key Authorities: ${c.keyAuthorities.join(', ')}.`,
+      `Top Sectors: ${c.topSectors.join(', ')}.`,
+    ],
+    relatedLinks: [
+      { label: 'All India Locations Hub', path: '/locations', desc: 'Browse all 28 states and 50+ cities.' },
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory vendor onboarding.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' }
+    ],
+    pageType: 'service'
   };
 }
 
@@ -146,15 +204,21 @@ async function prerender() {
     generatedCount++;
   }
 
-  // Ensure sitemap.xml and robots.txt are copied to dist
-  const publicSitemap = path.resolve(process.cwd(), 'public', 'sitemap.xml');
-  const publicRobots = path.resolve(process.cwd(), 'public', 'robots.txt');
+  // Ensure all sitemap XML files and robots.txt are copied to dist
+  const sitemapFiles = [
+    'sitemap-index.xml',
+    'sitemap-services.xml',
+    'sitemap-blog.xml',
+    'sitemap-locations.xml',
+    'sitemap.xml',
+    'robots.txt',
+  ];
 
-  if (fs.existsSync(publicSitemap)) {
-    fs.copyFileSync(publicSitemap, path.resolve(distDir, 'sitemap.xml'));
-  }
-  if (fs.existsSync(publicRobots)) {
-    fs.copyFileSync(publicRobots, path.resolve(distDir, 'robots.txt'));
+  for (const file of sitemapFiles) {
+    const srcPath = path.resolve(process.cwd(), 'public', file);
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, path.resolve(distDir, file));
+    }
   }
 
   console.log(`[Prerender] Successfully pre-rendered ${generatedCount} static pages into dist/ for static hosting.`);

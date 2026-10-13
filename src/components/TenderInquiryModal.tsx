@@ -738,7 +738,7 @@ export const TenderInquiryModal: React.FC<TenderInquiryModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:flex-1 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 animate-amber-pulse"
                 >
                   <Send className="w-4 h-4" />
                   <span>{isSubmitting ? 'Registering Inquiry...' : 'Submit Tender Inquiry'}</span>

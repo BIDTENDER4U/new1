@@ -23,6 +23,15 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     keywords: ['bidding', 'tender', 'boq', 'nit', 'packet a', 'packet b', 'reverse auction', 'cppp', 'nprocure', 'consultancy', 'submission'],
   },
   {
+    id: 'bidding-journey',
+    title: '7-Stage Bidding Journey (Progress Stepper)',
+    description: 'Visual step-by-step roadmap from 32-point NIT document audit to live e-Reverse Auction L1 victory & contract award.',
+    type: 'service',
+    path: '/tender-bidding-consultancy',
+    pageId: 'tender-bidding-consultancy',
+    keywords: ['journey', 'stepper', 'bidding journey', 'stages', 'process', 'document audit', 'reverse auction', 'ra', 'emd waiver', 'boq modeling', 'dsc upload', 'steps', 'workflow', 'prep'],
+  },
+  {
     id: 'gem-registration',
     title: 'GeM Registration & Vendor Checklist',
     description: 'Statutory onboarding checklist for Primary Sellers, OEMs, and Resellers on GeM 4.0. PAN, GST, Aadhaar e-KYC & PFMS.',

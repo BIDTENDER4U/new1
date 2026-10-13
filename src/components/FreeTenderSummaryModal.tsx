@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   X, 
   FileText, 
@@ -13,16 +13,24 @@ import {
   Building2, 
   Coins, 
   FileCheck2, 
-  Download, 
+  UploadCloud, 
+  Trash2, 
+  Phone, 
+  Mail, 
+  User, 
+  Hash, 
+  Lock, 
+  Check, 
   Rocket, 
   UtensilsCrossed, 
   Award, 
-  KeyRound,
-  RefreshCw,
-  Globe,
-  QrCode
+  KeyRound, 
+  Globe, 
+  QrCode,
+  FileCheck,
+  Download
 } from 'lucide-react';
-import { BUSINESS_INFO, PAYMENT_INFO, getWhatsAppUrl } from '../lib/constants';
+import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
 
 interface FreeTenderSummaryModalProps {
   isOpen: boolean;
@@ -186,363 +194,1027 @@ export const FreeTenderSummaryModal: React.FC<FreeTenderSummaryModalProps> = ({
   onOpenRadarModal,
   onOpenPaymentModal,
 }) => {
+  // Navigation tabs: 'upload' (primary action) vs 'samples' (previewing report format)
+  const [activeTab, setActiveTab] = useState<'upload' | 'samples'>('upload');
+
+  // Form input states
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [tenderRef, setTenderRef] = useState('');
+  const [specificQuery, setSpecificQuery] = useState('');
+
+  // File upload states
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileBase64, setFileBase64] = useState<string>('');
+  const [fileSizeFormatted, setFileSizeFormatted] = useState<string>('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Submission & Confirmation states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState<{
+    name: string;
+    phone: string;
+    email: string;
+    fileName: string;
+    tenderRef: string;
+    fileSize?: string;
+    fileUrl?: string;
+    inquiryId?: string;
+  } | null>(null);
+
+  // Sample report picker states
   const [selectedSampleKey, setSelectedSampleKey] = useState<string>('aiims_diet');
-  const [customBidNumber, setCustomBidNumber] = useState('');
-  const [customAuthority, setCustomAuthority] = useState('');
-  const [customText, setCustomText] = useState('');
-  const [isCustomMode, setIsCustomMode] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   if (!isOpen) return null;
 
-  const currentReport = SAMPLE_TENDERS[selectedSampleKey] || SAMPLE_TENDERS.aiims_diet;
+  const currentSampleReport = SAMPLE_TENDERS[selectedSampleKey] || SAMPLE_TENDERS.aiims_diet;
 
-  const handleSelectSample = (key: string) => {
-    setIsGenerating(true);
-    setSelectedSampleKey(key);
-    setIsCustomMode(false);
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 250);
+  // Format file size nicely
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleGenerateCustom = (e: React.FormEvent) => {
+  // Handle file selection from input or drag-drop
+  const handleProcessFile = (file: File) => {
+    // 25 MB limit
+    const MAX_SIZE_BYTES = 25 * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+      setErrorMessage('File size exceeds 25 MB. Please select a smaller document or compress it.');
+      return;
+    }
+
+    setErrorMessage(null);
+    setUploadedFile(file);
+    setFileSizeFormatted(formatBytes(file.size));
+
+    // Convert to Base64 data URL for upload
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setFileBase64(reader.result);
+      }
+    };
+    reader.onerror = () => {
+      console.warn('FileReader error; proceeding with file metadata only');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleProcessFile(e.target.files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsCustomMode(true);
-      setIsGenerating(false);
-    }, 400);
+    setIsDragOver(true);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
   };
 
-  const customReportData: TenderSummaryReport = {
-    title: customAuthority ? `Tender Diagnostic: ${customAuthority}` : 'Custom Government Tender Analysis',
-    bidNumber: customBidNumber || 'TENDER/AUDIT/2026/CUSTOM',
-    authority: customAuthority || 'Public Sector Department / Municipal Authority',
-    portal: 'GeM 4.0 / CPPP / State eProc',
-    estimatedValue: 'Evaluated based on scope (₹50 Lakhs - ₹5 Crores)',
-    emdAmount: '2% of Bid Value (Subject to MSME/Startup Exemption)',
-    deadline: 'Refer to Live NIT Document',
-    category: 'Government Public Procurement',
-    scopeOfWork: customText ? customText.slice(0, 300) + '...' : 'Custom scope under public procurement evaluation.',
-    turnoverRequired: 'Standard 30%–50% of estimated tender value over past 3 financial years.',
-    experienceRequired: '80%/50%/40% three-tier past performance criteria on similar works.',
-    solvencyRequired: 'Bank Solvency Certificate from Scheduled Commercial Bank (30%-40% value).',
-    msmeBenefit: '100% EMD waiver under GFR 2017 Rule 170 with Bid Securing Declaration.',
-    startupBenefit: 'DPIIT Startup India Certificate grants 100% waiver from Prior Turnover & Experience under GFR Rule 173(i).',
-    mandatoryDocuments: [
-      { name: 'Startup India / Udyam MSME Certificate', tag: 'Exemption Proof', note: 'Provides statutory turnover, experience, and EMD waivers' },
-      { name: 'Class-3 Combo DSC (Signing + Encryption)', tag: 'Digital Security', note: 'Mandatory cryptographic key for portal bid upload' },
-      { name: 'FSSAI Licence (if Food / Catering Tender)', tag: 'Statutory Law', note: 'Mandatory statutory food hygiene licence under FSS Act' },
-      { name: 'CA Turnover Certificate with UDIN', tag: 'Financial Proof', note: 'Audited revenues for past 3 consecutive years with 18-digit UDIN' },
-      { name: 'Notarized Non-Blacklisting Affidavit', tag: 'Legal Affirmation', note: 'On appropriate stamp paper attested by notary' },
-      { name: 'ISO Certification (ISO 9001:2015)', tag: 'Quality Benchmark', note: 'Certified Quality Management System implementation' },
-    ],
-    redFlags: [
-      'Missing 18-digit UDIN on CA turnover and net worth certificates causes 45% of disqualifications.',
-      'Missing OEM authorization pairing code on GeM custom bids.',
-      'Non-notarized affidavits or stamp papers purchased after the NIT release date.',
-      'Failing to submit Bid Securing Declaration when claiming MSME/Startup EMD exemption.',
-    ],
-    consultantVerdict: 'Submit your complete NIT document to our Ahmedabad desk for full line-by-line Packet-A and Packet-B compliance packaging.',
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleProcessFile(e.dataTransfer.files[0]);
+    }
   };
 
-  const activeReport = isCustomMode ? customReportData : currentReport;
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    setFileBase64('');
+    setFileSizeFormatted('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
-  const whatsappInquiryUrl = getWhatsAppUrl(
-    `Hello Bid Tender 4 U, I generated a Free Tender Summary for ${activeReport.bidNumber} (${activeReport.title}). Please advise on eligibility and bid preparation.`
-  );
+  // Clean 10-digit phone number
+  const sanitizePhone = (val: string): string => {
+    return val.replace(/\D/g, '').slice(-10);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    // Validation
+    const trimmedName = name.trim();
+    const cleanPhone = sanitizePhone(phone);
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName || trimmedName.length < 2) {
+      setErrorMessage('Please enter your full name (at least 2 characters).');
+      return;
+    }
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setErrorMessage('Please enter a valid 10-digit mobile number so we can WhatsApp your summary.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    if (!uploadedFile && !tenderRef.trim()) {
+      setErrorMessage('Please either upload your tender document (PDF/Word/ZIP) or enter the Tender / GeM Bid number.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Guarantee file Base64 is fully read before sending to prevent empty file payload
+      let base64ToSend = fileBase64;
+      if (uploadedFile && (!base64ToSend || base64ToSend.length === 0)) {
+        try {
+          base64ToSend = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (typeof reader.result === 'string') resolve(reader.result);
+              else resolve('');
+            };
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(uploadedFile);
+          });
+        } catch (e) {
+          console.warn('File read error:', e);
+        }
+      }
+
+      const payload = {
+        form_type: 'free_tender_summary',
+        name: trimmedName,
+        company: company.trim() || `${trimmedName} (Direct Bidder)`,
+        phone: cleanPhone,
+        email: trimmedEmail,
+        portal: tenderRef.toLowerCase().includes('gem') ? 'GeM Portal' : 'CPPP / State eProc',
+        reference_number: tenderRef.trim() || (uploadedFile ? uploadedFile.name : 'NIT Tender Document'),
+        service: 'Free Manual Tender Summary on WhatsApp',
+        category: 'Tender Document Scrutiny',
+        message: `[Free Manual Tender Summary Request]
+Client: ${trimmedName}
+WhatsApp: +91 ${cleanPhone}
+Email: ${trimmedEmail}
+Uploaded File: ${uploadedFile ? `${uploadedFile.name} (${fileSizeFormatted || formatBytes(uploadedFile.size)})` : 'None (Reference provided)'}
+Tender Reference / Bid No: ${tenderRef.trim() || 'N/A'}
+Client Remarks / Specific Queries: ${specificQuery.trim() || 'Please prepare manual summary and WhatsApp shortly.'}`,
+        file_name: uploadedFile ? uploadedFile.name : '',
+        file_data: base64ToSend || '',
+        file_size: fileSizeFormatted || (uploadedFile ? formatBytes(uploadedFile.size) : ''),
+      };
+
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server responded with status ${res.status}`);
+      }
+
+      const resultData = await res.json().catch(() => ({}));
+      const inquiryId = resultData.inquiryId || resultData.record?.id || '';
+      const docUrl = resultData.record?.file_url || '';
+
+      // Save submission data to state for confirmation view
+      setSubmittedData({
+        name: trimmedName,
+        phone: cleanPhone,
+        email: trimmedEmail,
+        fileName: uploadedFile ? uploadedFile.name : (tenderRef.trim() || 'Tender Document'),
+        tenderRef: tenderRef.trim(),
+        fileSize: fileSizeFormatted || (uploadedFile ? formatBytes(uploadedFile.size) : undefined),
+        fileUrl: docUrl,
+        inquiryId,
+      });
+
+      // Save backup in local storage
+      try {
+        const recent = {
+          name: trimmedName,
+          phone: cleanPhone,
+          email: trimmedEmail,
+          submittedAt: new Date().toISOString(),
+          fileName: uploadedFile ? uploadedFile.name : tenderRef.trim(),
+        };
+        localStorage.setItem('bt4u_last_summary_request', JSON.stringify(recent));
+      } catch (err) {
+        // localStorage errors ignored
+      }
+
+      setIsSubmitted(true);
+    } catch (err: any) {
+      console.error('Submission error:', err);
+      setErrorMessage(
+        err.message || 'There was a temporary problem saving your request. Please click the WhatsApp button to send your document directly!'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetForm = () => {
+    setIsSubmitted(false);
+    setSubmittedData(null);
+    setUploadedFile(null);
+    setFileBase64('');
+    setFileSizeFormatted('');
+    setName('');
+    setPhone('');
+    setEmail('');
+    setCompany('');
+    setTenderRef('');
+    setSpecificQuery('');
+    setErrorMessage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const whatsappDirectUrl = submittedData
+    ? getWhatsAppUrl(
+        `Hello Bid Tender 4 U, I just submitted my tender document "${submittedData.fileName}" for the Free Manual Tender Summary. My name is ${submittedData.name} (+91 ${submittedData.phone}). Please send the manual summary here as soon as it is ready.`
+      )
+    : getWhatsAppUrl('Hello Bid Tender 4 U, I want to submit my tender document for a Free Manual Summary.');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
       <div className="bg-white text-slate-900 border border-slate-200 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
         
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-700 flex items-center justify-center shrink-0">
-              <Sparkles className="w-6 h-6 text-amber-600" />
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-[#1D3557] to-slate-900 text-white flex items-center justify-between gap-4 border-b border-slate-800">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 shadow-md">
+              <Sparkles className="w-6 h-6 text-slate-950" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                  Instant Executive Diagnostic
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-mono font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs">
+                  100% Free Service
                 </span>
-                <span className="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  100% Free Tool
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  Manual Expert Scrutiny • Zero AI Errors
                 </span>
               </div>
-              <h2 className="font-display text-xl sm:text-2xl font-black text-slate-900 mt-1">
-                Get Free Summary of Tender
+              <h2 className="font-display text-xl sm:text-2xl font-black text-white mt-1">
+                Get Free Tender Summary on WhatsApp
               </h2>
+              <p className="text-xs text-slate-300 hidden sm:block mt-0.5">
+                Upload your tender document. Our senior consultants will manually analyze it &amp; WhatsApp you the summary report shortly.
+              </p>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-2.5 rounded-xl text-slate-400 hover:text-slate-800 bg-white border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer shadow-sm"
+            className="p-2.5 rounded-xl text-slate-400 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 transition-colors cursor-pointer shadow-sm"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
-          
-          {/* Top Quick Picker: Real-World Sample Tenders */}
-          <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-700 flex items-center gap-1.5">
-                <FileCheck2 className="w-4 h-4 text-amber-600" />
-                <span>Test Instant Summary with Live Tender Samples:</span>
+        {/* Navigation Tabs (Upload Form vs Sample Summaries) */}
+        {!isSubmitted && (
+          <div className="px-5 pt-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2 sm:gap-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab('upload')}
+              className={`pb-3 px-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'upload'
+                  ? 'border-amber-500 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <UploadCloud className="w-4 h-4 text-amber-600" />
+              <span>Upload Document for Free WhatsApp Summary</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                Fast Turnaround
               </span>
-              <span className="text-[11px] text-slate-500 hidden sm:inline">
-                Click any sample to evaluate in 1-click
-              </span>
-            </div>
+            </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {[
-                { key: 'aiims_diet', label: 'AIIMS Hospital Diet & Canteen', tag: 'FSSAI Mandate', icon: UtensilsCrossed },
-                { key: 'cpwd_civil', label: 'CPWD Civil Roads & Drainage', tag: 'High Turnover', icon: Building2 },
-                { key: 'gem_it', label: 'KV Smart Classroom & IT', tag: 'GeM OEM Code', icon: KeyRound },
-                { key: 'army_rations', label: 'Indian Army Packaged Rations', tag: 'Central FSSAI', icon: Award },
-              ].map((sample) => {
-                const IconComponent = sample.icon;
-                const isSelected = !isCustomMode && selectedSampleKey === sample.key;
-                return (
-                  <button
-                    key={sample.key}
-                    type="button"
-                    onClick={() => handleSelectSample(sample.key)}
-                    className={`p-3 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-white border-amber-500 shadow-md ring-2 ring-amber-400/30'
-                        : 'bg-white/80 hover:bg-white border-slate-200 text-slate-700 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <IconComponent className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-slate-400'}`} />
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
-                        {sample.tag}
+            <button
+              type="button"
+              onClick={() => setActiveTab('samples')}
+              className={`pb-3 px-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'samples'
+                  ? 'border-amber-500 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileCheck2 className="w-4 h-4 text-slate-600" />
+              <span>Preview Sample Manual Summaries</span>
+              <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">
+                (4 Real Tenders)
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* Modal Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+
+          {/* ========================================================================= */}
+          {/* SUCCESS / CONFIRMATION STATE                                              */}
+          {/* ========================================================================= */}
+          {isSubmitted && submittedData && (
+            <div className="py-6 px-4 sm:px-8 text-center space-y-6 animate-in fade-in duration-300 max-w-2xl mx-auto">
+              {/* Success Badge */}
+              <div className="w-20 h-20 rounded-full bg-emerald-100 border-4 border-emerald-300 text-emerald-600 flex items-center justify-center mx-auto shadow-lg animate-bounce">
+                <Check className="w-10 h-10 stroke-[3]" />
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  Document Uploaded Successfully
+                </span>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-slate-900">
+                  Tender Document Received!
+                </h3>
+                <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+                  Thank you, <strong className="text-slate-900">{submittedData.name}</strong>! Our senior tender specialist in Ahmedabad is now manually reviewing your tender clauses, eligibility, and EMD waiver applicability.
+                </p>
+              </div>
+
+              {/* WhatsApp Delivery Reassurance Box */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-emerald-50/80 border-2 border-emerald-300 text-left space-y-3 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <MessageCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 block">
+                      Summary Delivery Channel
+                    </span>
+                    <span className="text-sm sm:text-base font-extrabold text-slate-900">
+                      WhatsApp: <span className="text-emerald-700">+91 {submittedData.phone}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 border-t border-emerald-200 text-xs">
+                  <div className="p-2.5 bg-white rounded-xl border border-emerald-100 flex flex-col justify-between">
+                    <div>
+                      <span className="text-slate-500 font-semibold block text-[11px]">Submitted Document:</span>
+                      <span className="font-bold text-slate-900 truncate block mt-0.5" title={submittedData.fileName}>
+                        📄 {submittedData.fileName} {submittedData.fileSize ? `(${submittedData.fileSize})` : ''}
                       </span>
                     </div>
-                    <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
-                      {sample.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                    {submittedData.fileUrl && (
+                      <a
+                        href={`${submittedData.fileUrl}?download=1`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Download Stored Copy</span>
+                      </a>
+                    )}
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-emerald-100 flex flex-col justify-between">
+                    <div>
+                      <span className="text-slate-500 font-semibold block text-[11px]">Estimated Turnaround:</span>
+                      <span className="font-bold text-emerald-700 flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Shortly (Within 30–60 Minutes)</span>
+                      </span>
+                    </div>
+                    {submittedData.inquiryId && (
+                      <span className="mt-1.5 font-mono text-[10px] text-slate-500 block">
+                        Ref ID: <strong className="text-slate-700">{submittedData.inquiryId}</strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            {/* Custom Tender Accordion / Toggle */}
-            <div className="mt-4 pt-3 border-t border-slate-200">
-              <form onSubmit={handleGenerateCustom} className="flex flex-col sm:flex-row gap-2.5">
-                <input
-                  type="text"
-                  value={customBidNumber}
-                  onChange={(e) => setCustomBidNumber(e.target.value)}
-                  placeholder="Or enter your GeM Bid / NIT Number (e.g. GEM/2026/B/891234)"
-                  className="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500 placeholder-slate-400"
-                />
-                <input
-                  type="text"
-                  value={customAuthority}
-                  onChange={(e) => setCustomAuthority(e.target.value)}
-                  placeholder="Department (e.g. CPWD, AIIMS, Indian Railways)"
-                  className="sm:w-64 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500 placeholder-slate-400"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
+                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 pt-1">
+                  <Lock className="w-3 h-3 text-emerald-600" />
+                  <span>100% Free of Cost • Zero obligation • Complete confidentiality guaranteed.</span>
+                </div>
+              </div>
+
+              {/* Instant WhatsApp Connect Button */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <a
+                  href={whatsappDirectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm transition-all shadow-md flex items-center justify-center gap-2 animate-pulse"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Generate Summary</span>
-                </button>
-              </form>
-            </div>
-          </div>
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Connect with Specialist on WhatsApp Now</span>
+                </a>
 
-          {/* Active Summary Report Card */}
-          {isGenerating ? (
-            <div className="p-12 text-center text-slate-500 space-y-3">
-              <RefreshCw className="w-8 h-8 animate-spin text-amber-500 mx-auto" />
-              <p className="text-sm font-semibold text-slate-700">Analyzing tender document clauses & criteria...</p>
+                <button
+                  type="button"
+                  onClick={handleResetForm}
+                  className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors cursor-pointer border border-slate-300"
+                >
+                  Submit Another Tender Document
+                </button>
+              </div>
+
+              {/* What will be in the summary reminder */}
+              <div className="pt-4 border-t border-slate-200 text-left">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-2">
+                  What your free WhatsApp summary will include:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Turnover, Experience &amp; Solvency criteria audit</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>100% MSME EMD Exemption &amp; GFR 170 applicability</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Startup India turnover/experience waiver check</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>GeM OEM Authorization (MAF) code mandate verify</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
-          ) : (
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 1: UPLOAD DOCUMENT & GET MANUAL SUMMARY (PRIMARY FLOW)                */}
+          {/* ========================================================================= */}
+          {!isSubmitted && activeTab === 'upload' && (
             <div className="space-y-6">
               
-              {/* Report Header Card */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-amber-50/80 via-white to-amber-50/80 border border-amber-200 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <span className="text-xs font-mono font-bold text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-300">
-                    BID REF: {activeReport.bidNumber}
-                  </span>
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-300">
-                    {activeReport.portal}
-                  </span>
-                </div>
-
-                <h3 className="font-display text-xl sm:text-2xl font-black text-slate-900 mt-2">
-                  {activeReport.title}
-                </h3>
-
-                <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                  <strong>Scope Summary:</strong> {activeReport.scopeOfWork}
-                </p>
-
-                {/* Key Numbers Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-amber-200/80">
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Est. Bid Value</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-slate-900">{activeReport.estimatedValue}</span>
+              {/* Trust & Process Banner */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/90 border border-amber-300/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-800 border border-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <FileCheck className="w-5 h-5 text-amber-700" />
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block">EMD Required</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-amber-700">{activeReport.emdAmount}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Tender Authority</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">{activeReport.authority}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Closing Window</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-red-600 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{activeReport.deadline}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Statutory Exemption Highlights (Startup & MSME) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Startup India Exemption Box */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider mb-2">
-                      <Rocket className="w-4 h-4 text-emerald-600" />
-                      <span>Startup India (DPIIT) Statutory Exemption</span>
-                    </div>
-                    <h4 className="font-display font-bold text-slate-900 text-sm mb-1.5">
-                      100% Turnover & Experience Waiver under GFR 173(i)
+                    <h4 className="font-display text-sm sm:text-base font-bold text-slate-900">
+                      How Free Manual Tender Summary Works
                     </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {activeReport.startupBenefit}
+                    <p className="text-xs text-slate-700 mt-0.5 leading-relaxed">
+                      Just upload your tender / NIT document and fill your contact details below. Our senior consultant will manually scrutinize the entire document and <strong>WhatsApp you the complete summary report shortly</strong> — 100% Free!
                     </p>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-emerald-200/80 flex items-center justify-between text-[11px] text-emerald-800 font-semibold">
-                    <span>Applicable via DPIIT Certificate</span>
-                    <span className="font-bold">No 3-Year History Needed</span>
-                  </div>
                 </div>
-
-                {/* MSME Udyam Exemption Box */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 text-blue-800 font-bold text-xs uppercase tracking-wider mb-2">
-                      <Coins className="w-4 h-4 text-blue-600" />
-                      <span>MSME / Udyam EMD & Fee Exemption</span>
-                    </div>
-                    <h4 className="font-display font-bold text-slate-900 text-sm mb-1.5">
-                      100% EMD Waiver under GFR 2017 Rule 170
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {activeReport.msmeBenefit}
-                    </p>
-                  </div>
-                  <div className="mt-3 pt-2.5 border-t border-blue-200/80 flex items-center justify-between text-[11px] text-blue-800 font-semibold">
-                    <span>Requires Bid Securing Declaration</span>
-                    <span className="font-bold">L1+15% Preference Band</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Financial & Technical Benchmarks */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-amber-600" />
-                  <span>Mandatory Eligibility Benchmarks (Technical Packet A)</span>
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 bg-white rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold block mb-1">Annual Turnover Required:</span>
-                    <span className="font-semibold text-slate-900">{activeReport.turnoverRequired}</span>
-                  </div>
-
-                  <div className="p-3 bg-white rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold block mb-1">Past Experience Criteria:</span>
-                    <span className="font-semibold text-slate-900">{activeReport.experienceRequired}</span>
-                  </div>
-
-                  <div className="p-3 bg-white rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-bold block mb-1">Bank Solvency / Net Worth:</span>
-                    <span className="font-semibold text-slate-900">{activeReport.solvencyRequired}</span>
-                  </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] font-mono font-bold bg-white px-2.5 py-1 rounded-lg border border-amber-300 text-amber-900 shadow-2xs">
+                    ⏱️ Turnaround: 30–60 Mins
+                  </span>
                 </div>
               </div>
 
-              {/* Mandatory Statutory Compliance Documents Checklist */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-amber-600" />
-                    <span>Mandatory Statutory Compliance Packet ({activeReport.mandatoryDocuments.length} Documents)</span>
-                  </h4>
-                  <span className="text-[11px] text-slate-500">Zero tolerance for missing attachments</span>
-                </div>
+              {/* The Submission Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {activeReport.mandatoryDocuments.map((doc, idx) => (
-                    <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <div className="min-w-0">
-                        <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className="text-xs font-bold text-slate-900 truncate">{doc.name}</span>
-                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono shrink-0">
-                            {doc.tag}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600">{doc.note}</p>
+                {/* STEP 1: DOCUMENT UPLOAD ZONE */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-mono flex items-center justify-center">1</span>
+                      <span>Upload Tender Document (NIT / BOQ / RFP)*</span>
+                    </label>
+                    <span className="text-[11px] text-slate-500">PDF, Word, Scanned, ZIP (Up to 25 MB)</span>
+                  </div>
+
+                  {/* Upload Dropzone */}
+                  {!uploadedFile ? (
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
+                        isDragOver
+                          ? 'border-amber-500 bg-amber-50/70 scale-[1.01]'
+                          : 'border-slate-300 bg-slate-50/70 hover:bg-slate-100/70 hover:border-amber-400'
+                      }`}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileInputChange}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg"
+                        className="hidden"
+                      />
+                      <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 border border-amber-300 flex items-center justify-center mx-auto mb-3">
+                        <UploadCloud className="w-7 h-7 text-amber-600" />
+                      </div>
+                      <h5 className="font-display text-sm sm:text-base font-bold text-slate-900">
+                        Click to browse or Drag &amp; Drop tender document
+                      </h5>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Upload your NIT document, GeM bid PDF, technical schedule, or RFP
+                      </p>
+                      <div className="mt-3 flex items-center justify-center gap-2 text-[10px] text-slate-400 font-mono">
+                        <span>Max 25 MB</span>
+                        <span>•</span>
+                        <span>All formats supported</span>
+                        <span>•</span>
+                        <span>100% Confidential</span>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    /* File Selected Card */
+                    <div className="p-4 rounded-2xl bg-emerald-50/90 border-2 border-emerald-300 flex items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                          <FileText className="w-6 h-6" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 truncate block">
+                            {uploadedFile.name}
+                          </span>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-600 mt-0.5">
+                            <span className="font-mono">{fileSizeFormatted}</span>
+                            <span>•</span>
+                            <span className="text-emerald-700 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              Ready for manual review
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="p-2 rounded-xl text-slate-500 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 transition-colors cursor-pointer shrink-0"
+                        title="Remove or replace document"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Helper for users without file */}
+                  <p className="text-[11px] text-slate-500 italic">
+                    Don't have the file downloaded? You can also enter the GeM Bid Number or Tender Link in the optional field below.
+                  </p>
                 </div>
+
+                {/* STEP 2: CLIENT CONTACT DETAILS */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-mono flex items-center justify-center">2</span>
+                      <span>Your Contact Details (Where to Send Free Summary)*</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    
+                    {/* Full Name */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="e.g. Rajesh Sharma"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 placeholder-slate-400 shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Mobile Number */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">
+                        WhatsApp Number <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-600 font-bold text-xs">
+                          +91
+                        </div>
+                        <input
+                          type="tel"
+                          required
+                          maxLength={10}
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                          placeholder="10-digit WhatsApp number (e.g. 9876543210)"
+                          className="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 placeholder-slate-400 shadow-2xs"
+                        />
+                      </div>
+                      <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
+                        Free manual summary will be WhatsApped to this number
+                      </span>
+                    </div>
+
+                    {/* Email ID */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">
+                        Email ID <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Mail className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="e.g. rajesh@company.com"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 placeholder-slate-400 shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Company / Firm Name (Optional) */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">
+                        Company / Firm Name <span className="text-slate-400 text-[10px] font-normal">(Optional)</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Building2 className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          placeholder="e.g. Sharma Infotech / Direct Bidder"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 placeholder-slate-400 shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* STEP 3: OPTIONAL TENDER CONTEXT */}
+                <div className="space-y-3 pt-2">
+                  <label className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-[11px] font-mono flex items-center justify-center">3</span>
+                    <span>Tender Reference &amp; Questions (Optional)</span>
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">
+                        Tender / GeM Bid Number or Authority
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Hash className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          value={tenderRef}
+                          onChange={(e) => setTenderRef(e.target.value)}
+                          placeholder="e.g. GEM/2026/B/8941203 or AIIMS Delhi"
+                          className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500 placeholder-slate-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">
+                        Any Specific Question or Clause to Scrutinize?
+                      </label>
+                      <input
+                        type="text"
+                        value={specificQuery}
+                        onChange={(e) => setSpecificQuery(e.target.value)}
+                        placeholder="e.g. Check MSME EMD waiver, OEM code, or experience relaxation"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-amber-500 placeholder-slate-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {errorMessage && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-300 text-red-900 text-xs flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+
+                {/* Scope Coverage Highlights Box */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block">
+                    What Our Senior Consultants Will Manually Check in Your Document:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-slate-700">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Turnover &amp; Experience Benchmarks</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>100% MSME EMD Exemption (GFR 170)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Startup India Waivers (GFR 173(i))</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>GeM OEM Authorization (MAF) Code</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Mandatory Packet-A Documents</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Critical Disqualification Traps</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Action Button */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                  <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Your documents are handled with strict NDA confidentiality.</span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg animate-pulse"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                        <span>Submitting Document to Consultant...</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle className="w-4 h-4 text-slate-950" />
+                        <span>Get Free Manual Summary on WhatsApp</span>
+                        <ArrowRight className="w-4 h-4 text-slate-950" />
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 2: SAMPLE MANUAL SUMMARIES PREVIEW                                    */}
+          {/* ========================================================================= */}
+          {!isSubmitted && activeTab === 'samples' && (
+            <div className="space-y-6">
+              
+              {/* Top Banner Explaining This is a Sample */}
+              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="text-xs text-blue-900">
+                  <strong className="block text-sm font-bold text-blue-950">
+                    Sample Tender Summary Format
+                  </strong>
+                  This is the exact comprehensive manual format our consultants prepare for your tender and send to your WhatsApp.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('upload')}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"
+                >
+                  Upload Your Tender Document Now
+                </button>
               </div>
 
-              {/* Critical Red Flags & Disqualification Traps */}
-              <div className="p-5 rounded-2xl bg-red-50/80 border border-red-200 space-y-2.5">
-                <div className="flex items-center gap-2 text-red-800 font-bold text-xs uppercase tracking-wider">
-                  <AlertTriangle className="w-4 h-4 text-red-600" />
-                  <span>Critical Disqualification Traps to Avoid (85% of Bidders Fail Here)</span>
-                </div>
-
-                <ul className="space-y-1.5">
-                  {activeReport.redFlags.map((flag, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-red-900">
-                      <span className="text-red-500 font-bold shrink-0">•</span>
-                      <span>{flag}</span>
-                    </li>
-                  ))}
-                </ul>
+              {/* Sample Selector Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {[
+                  { key: 'aiims_diet', label: 'AIIMS Hospital Diet & Canteen', tag: 'FSSAI Mandate', icon: UtensilsCrossed },
+                  { key: 'cpwd_civil', label: 'CPWD Civil Roads & Drainage', tag: 'High Turnover', icon: Building2 },
+                  { key: 'gem_it', label: 'KV Smart Classroom & IT', tag: 'GeM OEM Code', icon: KeyRound },
+                  { key: 'army_rations', label: 'Indian Army Packaged Rations', tag: 'Central FSSAI', icon: Award },
+                ].map((sample) => {
+                  const IconComponent = sample.icon;
+                  const isSelected = selectedSampleKey === sample.key;
+                  return (
+                    <button
+                      key={sample.key}
+                      type="button"
+                      onClick={() => setSelectedSampleKey(sample.key)}
+                      className={`p-3 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-white border-amber-500 shadow-md ring-2 ring-amber-400/30'
+                          : 'bg-white/80 hover:bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <IconComponent className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-slate-400'}`} />
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+                          {sample.tag}
+                        </span>
+                      </div>
+                      <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
+                        {sample.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Consultant Verdict & Next Steps */}
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                <div className="text-xs">
-                  <strong className="text-amber-900">Senior Consultant Verdict:</strong>{' '}
-                  <span className="text-slate-700">{activeReport.consultantVerdict}</span>
+              {/* Active Sample Summary Report Card */}
+              <div className="space-y-6 pt-2">
+                
+                {/* Report Header Card */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-amber-50/80 via-white to-amber-50/80 border border-amber-200 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-mono font-bold text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-300">
+                      BID REF: {currentSampleReport.bidNumber}
+                    </span>
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-300">
+                      {currentSampleReport.portal}
+                    </span>
+                  </div>
+
+                  <h3 className="font-display text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                    {currentSampleReport.title}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                    <strong>Scope Summary:</strong> {currentSampleReport.scopeOfWork}
+                  </p>
+
+                  {/* Key Numbers Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-amber-200/80">
+                    <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block">Est. Bid Value</span>
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-900">{currentSampleReport.estimatedValue}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block">EMD Required</span>
+                      <span className="text-xs sm:text-sm font-extrabold text-amber-700">{currentSampleReport.emdAmount}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block">Tender Authority</span>
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">{currentSampleReport.authority}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block">Closing Window</span>
+                      <span className="text-xs sm:text-sm font-extrabold text-red-600 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{currentSampleReport.deadline}</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Statutory Exemption Highlights (Startup & MSME) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider mb-2">
+                        <Rocket className="w-4 h-4 text-emerald-600" />
+                        <span>Startup India (DPIIT) Statutory Exemption</span>
+                      </div>
+                      <h4 className="font-display font-bold text-slate-900 text-sm mb-1.5">
+                        100% Turnover &amp; Experience Waiver under GFR 173(i)
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {currentSampleReport.startupBenefit}
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-emerald-200/80 flex items-center justify-between text-[11px] text-emerald-800 font-semibold">
+                      <span>Applicable via DPIIT Certificate</span>
+                      <span className="font-bold">No 3-Year History Needed</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-blue-800 font-bold text-xs uppercase tracking-wider mb-2">
+                        <Coins className="w-4 h-4 text-blue-600" />
+                        <span>MSME / Udyam EMD &amp; Fee Exemption</span>
+                      </div>
+                      <h4 className="font-display font-bold text-slate-900 text-sm mb-1.5">
+                        100% EMD Waiver under GFR 2017 Rule 170
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {currentSampleReport.msmeBenefit}
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-blue-200/80 flex items-center justify-between text-[11px] text-blue-800 font-semibold">
+                      <span>Requires Bid Securing Declaration</span>
+                      <span className="font-bold">L1+15% Preference Band</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financial & Technical Benchmarks */}
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-600" />
+                    <span>Mandatory Eligibility Benchmarks (Technical Packet A)</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold block mb-1">Annual Turnover Required:</span>
+                      <span className="font-semibold text-slate-900">{currentSampleReport.turnoverRequired}</span>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold block mb-1">Past Experience Criteria:</span>
+                      <span className="font-semibold text-slate-900">{currentSampleReport.experienceRequired}</span>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold block mb-1">Bank Solvency / Net Worth:</span>
+                      <span className="font-semibold text-slate-900">{currentSampleReport.solvencyRequired}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mandatory Statutory Compliance Documents Checklist */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-amber-600" />
+                      <span>Mandatory Statutory Compliance Packet ({currentSampleReport.mandatoryDocuments.length} Documents)</span>
+                    </h4>
+                    <span className="text-[11px] text-slate-500">Zero tolerance for missing attachments</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {currentSampleReport.mandatoryDocuments.map((doc, idx) => (
+                      <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                            <span className="text-xs font-bold text-slate-900 truncate">{doc.name}</span>
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono shrink-0">
+                              {doc.tag}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600">{doc.note}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Critical Red Flags & Disqualification Traps */}
+                <div className="p-5 rounded-2xl bg-red-50/80 border border-red-200 space-y-2.5">
+                  <div className="flex items-center gap-2 text-red-800 font-bold text-xs uppercase tracking-wider">
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                    <span>Critical Disqualification Traps to Avoid (85% of Bidders Fail Here)</span>
+                  </div>
+
+                  <ul className="space-y-1.5">
+                    {currentSampleReport.redFlags.map((flag, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-red-900">
+                        <span className="text-red-500 font-bold shrink-0">•</span>
+                        <span>{flag}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Consultant Verdict & Next Steps */}
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <strong className="text-amber-900">Senior Consultant Verdict:</strong>{' '}
+                    <span className="text-slate-700">{currentSampleReport.consultantVerdict}</span>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -553,21 +1225,23 @@ export const FreeTenderSummaryModal: React.FC<FreeTenderSummaryModalProps> = ({
         {/* Modal Footer Actions */}
         <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <Printer className="w-4 h-4 text-slate-600" />
-              <span>Print / Save PDF</span>
-            </button>
+            {activeTab === 'samples' && !isSubmitted && (
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <Printer className="w-4 h-4 text-slate-600" />
+                <span>Print Sample PDF</span>
+              </button>
+            )}
 
             {onOpenRadarModal && (
               <button
                 type="button"
                 onClick={() => {
                   onClose();
-                  onOpenRadarModal(activeReport.title);
+                  onOpenRadarModal(uploadedFile ? uploadedFile.name : currentSampleReport.title);
                 }}
                 className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                 title="Verify live tender rules with Google Search Grounding"
@@ -595,28 +1269,41 @@ export const FreeTenderSummaryModal: React.FC<FreeTenderSummaryModalProps> = ({
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <a
-              href={whatsappInquiryUrl}
+              href={getWhatsAppUrl('Hello Bid Tender 4 U, I want to discuss a live government tender and get a manual tender summary.')}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Specialist for Bid Support</span>
+              <span>WhatsApp Tender Helpdesk</span>
             </a>
 
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (onOpenInquiry) {
-                  onOpenInquiry(activeReport.category, 'Tender Document Analysis & Eligibility Audit');
-                }
-              }}
-              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <span>Submit Full NIT for Audit</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {!isSubmitted && activeTab === 'samples' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('upload')}
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <span>Upload Document for Free Summary</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {!isSubmitted && activeTab === 'upload' && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  if (onOpenInquiry) {
+                    onOpenInquiry('All Tenders', 'Tender Document Scrutiny & Full Bid Packaging');
+                  }
+                }}
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <span>Request Custom Bid Support</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 

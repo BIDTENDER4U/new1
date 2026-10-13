@@ -330,7 +330,6 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
 
 
-          {/* Right: Search Bar, Tender Tools Dropdown, WhatsApp, Inquire & Menu */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Global Search Trigger */}
             <button
@@ -359,7 +358,7 @@ export const Header: React.FC<HeaderProps> = ({
                       : 'bg-white text-[#1D3557] border-[#D9E0E8] hover:border-[#1D3557] hover:bg-slate-50'
                   }`}
                   aria-expanded={isToolsDropdownOpen}
-                  title="Live Radar, Office Map, Free Summary & Sample Letters"
+                  title="Free Summary, Sample Letters & Payment Details"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#D4AF70]" />
                   <span>Tools</span>
@@ -372,62 +371,6 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {isToolsDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-[#D9E0E8] p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
-                    {onOpenRadarModal && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsToolsDropdownOpen(false);
-                          onOpenRadarModal();
-                        }}
-                        className="w-full p-2.5 rounded-xl hover:bg-blue-50/80 transition-colors flex items-start gap-3 text-left group cursor-pointer"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-                          <Globe className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-[#1D3557] group-hover:text-blue-900">
-                              Live Tender Radar
-                            </span>
-                            <span className="text-[9px] font-mono font-black uppercase text-blue-700 bg-blue-100 px-1 py-0.2 rounded">
-                              Google
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-slate-500 line-clamp-1">
-                            Real-time tender updates & Ministry OMs
-                          </span>
-                        </div>
-                      </button>
-                    )}
-
-                    {onOpenMapsModal && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsToolsDropdownOpen(false);
-                          onOpenMapsModal();
-                        }}
-                        className="w-full p-2.5 rounded-xl hover:bg-red-50/80 transition-colors flex items-start gap-3 text-left group cursor-pointer"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-red-100 text-red-700 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-                          <MapPin className="w-4 h-4 text-red-600" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-[#1D3557] group-hover:text-red-900">
-                              Office & Tender Map
-                            </span>
-                            <span className="text-[9px] font-mono font-black uppercase text-red-700 bg-red-100 px-1 py-0.2 rounded">
-                              Maps
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-slate-500 line-clamp-1">
-                            Ahmedabad HQ & municipal submission desks
-                          </span>
-                        </div>
-                      </button>
-                    )}
-
                     {onOpenFreeSummaryModal && (
                       <button
                         type="button"
@@ -445,7 +388,7 @@ export const Header: React.FC<HeaderProps> = ({
                             Free Tender Summary
                           </span>
                           <span className="text-[11px] text-slate-500 line-clamp-1">
-                            Instant preliminary eligibility diagnosis
+                            Upload document & get manual summary on WhatsApp
                           </span>
                         </div>
                       </button>
@@ -535,7 +478,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onScrollToForm}
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-black text-white bg-[#1D3557] hover:bg-[#152742] border border-[#1D3557] rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-black text-white bg-[#1D3557] hover:bg-[#152742] border border-[#1D3557] rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap animate-inquiry-pulse"
             >
               <span>Inquire</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-[#D4AF70] stroke-[3]" />
@@ -839,11 +782,11 @@ export const Header: React.FC<HeaderProps> = ({
                           Get Free Summary of Tender
                         </span>
                         <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-mono">
-                          Free Tool
+                          Free on WhatsApp
                         </span>
                       </div>
                       <span className="text-[10px] text-slate-600 font-medium block">
-                        NIT & GeM eligibility, exemption & trap diagnostic
+                        Upload document & get manual summary shortly on WhatsApp
                       </span>
                     </div>
                   </div>
@@ -880,70 +823,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     <ArrowRight className="w-4 h-4 text-[#1D3557] group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
-                  </div>
-                )}
-
-                {/* Live Tender & Regulatory Radar Card in Drawer */}
-                {onOpenRadarModal && (
-                  <div
-                    onClick={() => {
-                      closeMenu();
-                      onOpenRadarModal();
-                    }}
-                    className="p-3.5 rounded-2xl bg-blue-50/70 hover:bg-blue-100/90 border border-blue-200 hover:border-blue-300 flex items-center justify-between gap-3 shadow-xs cursor-pointer group transition-all"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-blue-700 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <Globe className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-black text-blue-950 block">
-                            Live Tender & Regulatory Radar
-                          </span>
-                          <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-blue-600 text-white font-mono">
-                            Google Grounded
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-blue-800 font-medium block">
-                          Real-time tender updates, Ministry OMs & GeM 4.0 data
-                        </span>
-                      </div>
-                    </div>
-
-                    <ArrowRight className="w-4 h-4 text-blue-700 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
-                  </div>
-                )}
-
-                {/* Google Maps Tender Locator Card in Drawer */}
-                {onOpenMapsModal && (
-                  <div
-                    onClick={() => {
-                      closeMenu();
-                      onOpenMapsModal();
-                    }}
-                    className="p-3.5 rounded-2xl bg-red-50/70 hover:bg-red-100/90 border border-red-200 hover:border-red-300 flex items-center justify-between gap-3 shadow-xs cursor-pointer group transition-all"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <MapPin className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-black text-red-950 block">
-                            Google Maps Tender Locator
-                          </span>
-                          <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-red-600 text-white font-mono">
-                            Maps Grounded
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-red-800 font-medium block">
-                          Ahmedabad HQ, Municipal offices & GeM facilitation hubs
-                        </span>
-                      </div>
-                    </div>
-
-                    <ArrowRight className="w-4 h-4 text-red-700 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
                   </div>
                 )}
 

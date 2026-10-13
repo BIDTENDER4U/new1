@@ -28,7 +28,7 @@ export const WhatsAppFloatingButton: React.FC = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with Bid Tender 4 U on WhatsApp"
-        className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:scale-110 active:scale-95 group relative"
+        className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:scale-110 active:scale-95 group relative animate-pulse-subtle"
       >
         <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
