@@ -1,4 +1,4 @@
-import { TenderInquiryFormData } from '../types';
+import { TenderInquiryFormData } from '../types/index';
 import { BUSINESS_INFO } from './constants';
 
 export async function readFileAsBase64(file: File): Promise<string> {

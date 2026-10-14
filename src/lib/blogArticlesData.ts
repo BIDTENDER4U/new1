@@ -1,4 +1,4 @@
-import { BlogPostItem } from '../types';
+import { BlogPostItem } from '../types/index';
 
 export const BLOG_CATEGORIES = [
   'All Articles',

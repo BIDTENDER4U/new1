@@ -1,4 +1,4 @@
-import { CityLocationItem, StateLocationItem } from '../types';
+import { CityLocationItem, StateLocationItem } from '../types/index';
 
 export interface AllIndiaSummary {
   title: string;

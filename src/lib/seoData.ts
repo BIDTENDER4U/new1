@@ -1,3 +1,11 @@
+import { BlogPostItem } from '../types/index';
+import { BLOG_ARTICLES } from './blogArticlesData';
+
+export interface FAQSchemaItem {
+  question: string;
+  answer: string;
+}
+
 export interface RouteMetadata {
   path: string;
   title: string;
@@ -12,6 +20,8 @@ export interface RouteMetadata {
   keyPoints: string[];
   relatedLinks: Array<{ label: string; path: string; desc: string }>;
   pageType?: 'website' | 'article' | 'service';
+  faqItems?: FAQSchemaItem[];
+  faqSchemaJson?: string;
 }
 
 export const CANONICAL_BASE = 'https://www.bidtender4u.com';
@@ -81,7 +91,7 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
     description: 'End-to-end tender bidding services: GeM OEM Authorization codes, MSME EMD Exemption under GFR 170, technical bid audits, BOQ pricing, and reverse auctions.',
     ogTitle: 'Tender Services: GeM OEM Authorization & EMD Exemption',
     ogDescription: 'Six specialized tender practice areas: official GeM OEM Authorization codes, MSME EMD Exemption under GFR 170, technical packet audits, and reverse auctions.',
-    canonical: `${CANONICAL_BASE}/tender-bidding-consultancy`,
+    canonical: `${CANONICAL_BASE}/services`,
     breadcrumbTitle: 'Tender Bidding Services',
     h1: 'Government Tender Consultancy Services',
     lead: 'Six specialized practice areas guaranteeing procedural compliance and winning competitive edge in public sector bidding.',
@@ -133,7 +143,7 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
     ogTitle: 'GeM Document Checklist: OEM Authorization & EMD Proof',
     ogDescription: 'Complete statutory checklist for GeM registration, GeM OEM Authorization codes (MAF), and MSME EMD Exemption Bid Securing Declarations under GFR 170.',
     keywords: 'gem oem authorization, msme emd exemption, gem registration documents, gem seller checklist, gem portal registration documents, gem oem registration checklist',
-    canonical: `${CANONICAL_BASE}/gem-registration`,
+    canonical: `${CANONICAL_BASE}/gem-documents`,
     breadcrumbTitle: 'GeM Documents',
     h1: 'Document Requirements for GeM Registration',
     lead: 'Statutory documents for Primary Sellers, OEMs, and Resellers on Government e-Marketplace (GeM 4.0).',
@@ -629,3 +639,280 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
     pageType: 'website'
   }
 };
+
+/**
+ * Authoritative Questions & Answers dataset for all blog articles.
+ * Powers structured FAQ Schema (Schema.org/FAQPage) for Google Rich Snippets.
+ */
+export const BLOG_ARTICLES_FAQS: Record<string, FAQSchemaItem[]> = {
+  'gem-startup-waiver-rule-173i-analysis': [
+    {
+      question: 'Can DPIIT recognized startups bid for Indian government tenders without prior turnover or past experience?',
+      answer: 'Yes. Under Rule 173(i) of General Financial Rules (GFR) 2017 and Department of Expenditure OM No. F.20/2/2014-PPD, all central government ministries, CPSEs, and GeM custom bids are statutorily required to relax prior turnover and prior experience criteria for DPIIT-recognized startups, provided they conform to technical quality benchmarks.'
+    },
+    {
+      question: 'Which business entities qualify for DPIIT Startup India tender exemptions?',
+      answer: 'Private Limited Companies (under Companies Act 2013), Registered Partnership Firms, and LLPs incorporated within the last 10 years with an annual turnover not exceeding ₹100 Crores in any financial year since incorporation qualify. Sole proprietorships are not eligible for DPIIT startup recognition.'
+    },
+    {
+      question: 'Are startups exempt from Earnest Money Deposit (EMD) and tender document fees on GeM?',
+      answer: 'Yes. Under GFR 2017 Rule 170 and GeM GTC Clause 4.2, DPIIT-recognized startups are 100% exempt from EMD, tender document fees, and caution money deposits on GeM, upon executing an official Bid Securing Declaration.'
+    },
+    {
+      question: 'What recourse is available if a procuring agency wrongfully rejects a startup bid citing lack of 3-year balance sheets?',
+      answer: 'Startups can lodge an immediate pre-award statutory representation citing GFR 173(i), DoE OM No. F.20/2/2014-PPD, and DPIIT Notification G.S.R. 127(E) before financial Packet-B opening, and escalate to the Department of Expenditure Independent Review Committee if unresolved.'
+    }
+  ],
+  'fssai-licence-mandate-food-canteen-tenders': [
+    {
+      question: 'Is an FSSAI License mandatory for bidding on government canteen and dietary tenders?',
+      answer: 'Yes. Under Section 31 of the Food Safety and Standards Act 2006, holding an active, valid FSSAI License is a non-negotiable statutory eligibility requirement for all government hospital canteens, institutional catering, and food supply tenders across India.'
+    },
+    {
+      question: 'Is an FSSAI Basic Registration sufficient for government institutional catering bids?',
+      answer: 'No. A Basic Registration is valid only for micro-operators with annual turnover below ₹12 Lakhs. Government catering and hospital dietary tenders strictly mandate either a State License (turnover ₹12 Lakhs to ₹20 Crores) or a Central FSSAI License (> ₹20 Crores or multi-state operations).'
+    },
+    {
+      question: 'Which government departments mandate a Central FSSAI License?',
+      answer: 'Indian Railways (IRCTC), the Indian Armed Forces (Army Supply Corps / ASC), Central Government Hospitals (AIIMS, ESIC), and airport food authorities strictly require Central FSSAI licenses with NABL lab test certifications.'
+    },
+    {
+      question: 'What causes most technical rejections in government food tenders?',
+      answer: 'Over 70% of rejections occur due to submitting basic registrations instead of state/central licenses, lack of an approved Food Safety Management Plan (FSMS), missing NABL water/food laboratory test reports, or uncertified food handler medical fitness records.'
+    }
+  ],
+  'gfr-170-msme-emd-exemption-guide': [
+    {
+      question: 'Are MSME and Udyam registered enterprises 100% exempt from paying EMD in government tenders?',
+      answer: 'Yes. Under Rule 170 of General Financial Rules (GFR) 2017 and the Public Procurement Policy for MSEs Order 2012, all registered Micro and Small Enterprises (MSEs) holding a valid Udyam Registration Certificate are entitled to 100% exemption from Earnest Money Deposit (EMD).'
+    },
+    {
+      question: 'What document must an MSME submit in place of the EMD bank guarantee or demand draft?',
+      answer: 'MSMEs must submit a formal Bid Securing Declaration executed on non-judicial stamp paper or company letterhead confirming acceptance of debarment or suspension from bidding if the bid is withdrawn during validity.'
+    },
+    {
+      question: 'Can a government tender buyer legally reject an MSME EMD exemption request?',
+      answer: 'A buyer can reject the exemption only if the tender is for work contracts (civil engineering) where the department explicitly excludes works, or if the bidder\'s Udyam NIC code does not match the product or service category being procured.'
+    },
+    {
+      question: 'Are Medium Enterprises eligible for EMD exemption under GFR 170?',
+      answer: 'No. Under the MSMED Act and GFR 170, the statutory EMD waiver and purchase preference apply strictly to Micro and Small Enterprises (MSEs), not Medium enterprises.'
+    }
+  ],
+  'gem-oem-authorization-code-maf-compliance': [
+    {
+      question: 'What is a GeM OEM Authorization Code (MAF) and why is it required?',
+      answer: 'A GeM OEM Authorization Code is a cryptographically generated authorization key issued by an approved Original Equipment Manufacturer (OEM) permitting a specific reseller or partner to quote their catalog products in a specific GeM custom bid.'
+    },
+    {
+      question: 'Can a buyer reject a bid if the OEM Authorization Code does not match the bid reference number?',
+      answer: 'Yes. GeM custom bids require bid-specific OEM authorization codes. Generic dealership certificates or open-market distributor letters not linked to the specific Bid Number result in automated technical Packet-A rejection.'
+    },
+    {
+      question: 'How can resellers avoid OEM authorization traps and supplier cartels?',
+      answer: 'Resellers must verify that the OEM has granted secondary seller catalog pairing permission on GeM, request bid-specific authorization letters with verified signatory details, and execute formal back-to-back warranty backing agreements.'
+    },
+    {
+      question: 'What should a bidder do if an OEM issues conflicting authorizations to competing bidders?',
+      answer: 'Bidders must ensure their MAF contains exclusive bid authorization clauses or review the tender\'s eligibility conditions regarding multiple authorized agents representing the same OEM.'
+    }
+  ],
+  'class-3-combo-dsc-pki-cppp-nprocure': [
+    {
+      question: 'Why is a Class-3 Combo Digital Signature Certificate (DSC) mandatory for e-tendering in India?',
+      answer: 'Class-3 Combo DSC contains two distinct cryptographic certificates: a Signing Certificate for document authentication and non-repudiation, and an Encryption Certificate (Key Encipherment) for securing financial BOQ envelopes before portal submission.'
+    },
+    {
+      question: 'Which e-procurement portals require a Class-3 Combo token?',
+      answer: 'Central Public Procurement Portal (CPPP/eProcure), Gujarat nProcure, Rajasthan SPPP, Maharashtra e-Tenders, Indian Railways IREPS, Defense e-Procurement (DefProc), and GeM 4.0 all mandate Class-3 Combo tokens.'
+    },
+    {
+      question: 'What hardware crypto token is approved for Class-3 DSC in India?',
+      answer: 'FIPS 140-2 Level 2 certified cryptographic USB tokens such as WatchData PROXKey, ePass2003, and SafeNet are mandated by CCA (Controller of Certifying Authorities) India.'
+    },
+    {
+      question: 'Can an individual DSC be used for company tender bidding?',
+      answer: 'No. Tender bids must be signed with an Organizational Class-3 DSC bearing both the authorized signatory\'s name and the company\'s verified legal entity name and GSTIN.'
+    }
+  ],
+  'make-in-india-local-content-epc-strategy': [
+    {
+      question: 'What is the difference between Class-I and Class-II local suppliers under the Make in India (MII) Order?',
+      answer: 'Under the Public Procurement (Preference to Make in India) Order 2017 (amended 2026), a Class-I Local Supplier has local content equal to or exceeding 50%, whereas a Class-II Local Supplier has local content between 20% and 50%.'
+    },
+    {
+      question: 'What procurement preference do Class-I Local Suppliers receive in government tenders?',
+      answer: 'Class-I suppliers receive purchase preference with an L1 price matching band (typically L1 + 20%). If L1 is non-local, the lowest Class-I supplier within the band is invited to match the L1 price for 50% or 100% of the contract value.'
+    },
+    {
+      question: 'How is local content calculated in high-value infrastructure and EPC tenders?',
+      answer: 'Local content percentage = (Total Cost of Item - Value of Imported Content including duties) / Total Cost of Item * 100. It requires a detailed bill of materials breakdown and CA UDIN certification for tenders exceeding ₹10 Crores.'
+    },
+    {
+      question: 'Can foreign components packaged locally count towards Make in India local content?',
+      answer: 'No. Simple assembly, repackaging, or cosmetic processing without substantial domestic value addition does not qualify as local content under Ministry of Commerce and Industry guidelines.'
+    }
+  ]
+};
+
+/**
+ * Retrieves structured question and answer pairs for a blog article.
+ * Checks article.faqs first, then BLOG_ARTICLES_FAQS by slug, and extracts from content sections.
+ */
+export function getBlogArticleFaqs(slugOrArticle: string | BlogPostItem, articleObj?: BlogPostItem): FAQSchemaItem[] {
+  let article: BlogPostItem | undefined;
+  let slug = '';
+
+  if (typeof slugOrArticle === 'object' && slugOrArticle !== null) {
+    article = slugOrArticle;
+    slug = article.slug.toLowerCase().trim();
+  } else if (typeof slugOrArticle === 'string') {
+    slug = slugOrArticle.toLowerCase().trim().replace(/^\/?blog\//, '');
+    article = articleObj;
+    if (!article) {
+      article = BLOG_ARTICLES.find((a) => a.slug.toLowerCase() === slug);
+    }
+  }
+
+  // 1. Direct article.faqs property if present
+  if (article?.faqs && article.faqs.length > 0) {
+    const validFaqs = article.faqs
+      .map((item: any) => ({
+        question: (item.question || item.q || '').trim(),
+        answer: (item.answer || item.a || '').trim(),
+      }))
+      .filter((item) => item.question.length > 0 && item.answer.length > 0);
+
+    if (validFaqs.length > 0) {
+      return validFaqs;
+    }
+  }
+
+  // 2. Curated authoritative Q&A library by article slug
+  if (slug && BLOG_ARTICLES_FAQS[slug] && BLOG_ARTICLES_FAQS[slug].length > 0) {
+    return BLOG_ARTICLES_FAQS[slug];
+  }
+
+  // 3. Fallback: Automatically extract questions and answers from article sections or content
+  if (article?.sections && article.sections.length > 0) {
+    const extracted: FAQSchemaItem[] = [];
+
+    for (const sec of article.sections) {
+      // Check if section heading is phrased as a question (e.g., ends with '?')
+      if (sec.heading && /\?\s*$/.test(sec.heading.trim())) {
+        const cleanQuestion = sec.heading.replace(/^\d+[\.\)]\s*/, '').trim();
+        const cleanAnswer = (sec.content || []).slice(0, 2).join(' ').trim();
+        if (cleanQuestion && cleanAnswer) {
+          extracted.push({
+            question: cleanQuestion,
+            answer: cleanAnswer,
+          });
+        }
+      }
+
+      // Check if section content paragraphs contain Q: & A: patterns
+      if (sec.content && sec.content.length >= 2) {
+        for (let i = 0; i < sec.content.length - 1; i++) {
+          const line = sec.content[i].trim();
+          const nextLine = sec.content[i + 1].trim();
+          if (/^(Q|Question):\s*(.+)/i.test(line) && /^(A|Answer):\s*(.+)/i.test(nextLine)) {
+            const q = line.replace(/^(Q|Question):\s*/i, '').trim();
+            const a = nextLine.replace(/^(A|Answer):\s*/i, '').trim();
+            if (q && a) {
+              extracted.push({ question: q, answer: a });
+            }
+          }
+        }
+      }
+    }
+
+    if (extracted.length > 0) {
+      return extracted;
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Generates Schema.org FAQPage structured JSON-LD string.
+ */
+export function buildFaqPageJsonLd(faqs: FAQSchemaItem[]): string {
+  if (!faqs || faqs.length === 0) return '';
+  
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((item) => ({
+      '@type': 'Question',
+      name: item.question.trim(),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer.trim(),
+      },
+    })),
+  }, null, 2);
+}
+
+/**
+ * Builds RouteMetadata for a blog article with automatically injected FAQ Schema.
+ */
+export function buildBlogRouteWithFaqSchema(article: BlogPostItem): RouteMetadata {
+  const articlePath = `/blog/${article.slug}`;
+  const canonicalUrl = `${CANONICAL_BASE}${articlePath}`;
+  const faqs = getBlogArticleFaqs(article.slug, article);
+  const faqSchemaJson = faqs.length > 0 ? buildFaqPageJsonLd(faqs) : undefined;
+
+  return {
+    path: articlePath,
+    title: `${article.title} | Bid Tender 4 U`,
+    description: article.metaDescription || article.subtitle,
+    keywords: `${article.category.toLowerCase()}, tender, bidding, government procurement, ${(article.keywords || []).join(', ').toLowerCase()}`,
+    canonical: canonicalUrl,
+    breadcrumbTitle: article.title,
+    h1: article.title,
+    lead: article.subtitle,
+    keyPoints: article.keyTakeaways || [],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid preparation.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory compliance.' },
+      { label: 'Government Procurement Blog', path: '/blog', desc: 'Browse all articles.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' }
+    ],
+    pageType: 'article',
+    faqItems: faqs.length > 0 ? faqs : undefined,
+    faqSchemaJson,
+  };
+}
+
+/**
+ * Automatically injects structured FAQ Schema for all blog articles that contain questions and answers
+ * into ROUTES_SEO, ensuring optimal search visibility and rich snippets in Google search results.
+ */
+export function registerBlogArticlesInRoutesSeo(): void {
+  for (const article of BLOG_ARTICLES) {
+    const routeKey = `/blog/${article.slug}`;
+    ROUTES_SEO[routeKey] = buildBlogRouteWithFaqSchema(article);
+  }
+
+  // Known legacy/alias route support
+  if (ROUTES_SEO['/blog/fssai-licence-mandate-food-canteen-tenders']) {
+    ROUTES_SEO['/blog/fssai-license-government-food-tenders-guide'] = {
+      ...ROUTES_SEO['/blog/fssai-licence-mandate-food-canteen-tenders'],
+      canonical: `${CANONICAL_BASE}/blog/fssai-licence-mandate-food-canteen-tenders`,
+    };
+  }
+}
+
+// Automatically register on module load so ROUTES_SEO includes all blog articles with FAQ Schema
+registerBlogArticlesInRoutesSeo();
+
+/**
+ * Injects FAQPage Schema.org JSON-LD tag into an HTML template head.
+ */
+export function injectFaqSchemaIntoHtml(html: string, faqSchemaJson: string): string {
+  if (!faqSchemaJson) return html;
+  const scriptTag = `    <script type="application/ld+json" id="faq-schema">\n${faqSchemaJson}\n    </script>\n  </head>`;
+  return html.replace('</head>', scriptTag);
+}
+

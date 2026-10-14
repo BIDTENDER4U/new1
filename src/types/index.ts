@@ -109,5 +109,6 @@ export interface BlogPostItem {
   }[];
   regulatoryReferences: string[];
   recommendedServices: { title: string; action: string }[];
+  faqs?: { question: string; answer: string }[];
 }
 

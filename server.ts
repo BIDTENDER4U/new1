@@ -4,9 +4,17 @@ import path from 'path';
 import fs from 'fs';
 import { database } from './server/db';
 import { ai, queryTenderGrounding, queryMapsGrounding } from './server/gemini';
-import { ROUTES_SEO, RouteMetadata, CANONICAL_BASE } from './src/lib/seoData';
+import { ROUTES_SEO, RouteMetadata, CANONICAL_BASE, buildBlogRouteWithFaqSchema, injectFaqSchemaIntoHtml } from './src/lib/seoData';
 import { BLOG_ARTICLES } from './src/lib/blogArticlesData';
 import { STATES_DATA, CITIES_DATA } from './src/lib/locationData';
+import {
+  generateSitemapXml,
+  generateBlogSitemapXml,
+  generateLocationsSitemapXml,
+  generateServicesSitemapXml,
+  generateSitemapIndexXml,
+  getSitemapHeaders,
+} from './lib/sitemap';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxY_SoCpfIXTd_G6lK4MyJlyB8bTjYeqEO0cseLOnun0Z-voT-NhthJbjb5WbfrLZaH/exec';
@@ -16,23 +24,7 @@ const ALL_SEO_ROUTES: Record<string, RouteMetadata> = { ...ROUTES_SEO };
 
 for (const article of BLOG_ARTICLES) {
   const articlePath = `/blog/${article.slug}`;
-  ALL_SEO_ROUTES[articlePath] = {
-    path: articlePath,
-    title: `${article.title} | Bid Tender 4 U`,
-    description: article.metaDescription || article.subtitle,
-    canonical: `${CANONICAL_BASE}${articlePath}`,
-    breadcrumbTitle: article.title,
-    h1: article.title,
-    lead: article.subtitle,
-    keyPoints: article.keyTakeaways || [],
-    relatedLinks: [
-      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Comprehensive bid packaging & technical folder audit.' },
-      { label: 'GeM Registration', path: '/gem-registration', desc: 'Primary seller, OEM & reseller statutory onboarding.' },
-      { label: 'Government Procurement Blog', path: '/blog', desc: 'Browse all regulatory analysis and tender trend guides.' },
-      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk for preliminary eligibility review.' }
-    ],
-    pageType: 'article'
-  };
+  ALL_SEO_ROUTES[articlePath] = buildBlogRouteWithFaqSchema(article);
 }
 
 if (ALL_SEO_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders']) {
@@ -232,12 +224,17 @@ function renderHtmlResponse(template: string, routeData: RouteMetadata): string 
     );
   }
 
-  // Replace canonical URL
-  if (html.includes('<link rel="canonical"')) {
+  // Replace or inject canonical URL
+  const canonicalTag = `<link rel="canonical" href="${routeData.canonical}" />`;
+  if (html.includes('<!-- CANONICAL_URL_PLACEHOLDER -->')) {
+    html = html.replace('<!-- CANONICAL_URL_PLACEHOLDER -->', canonicalTag);
+  } else if (html.includes('<link rel="canonical"')) {
     html = html.replace(
       /<link rel="canonical" href=".*?"\s*\/?>/i,
-      `<link rel="canonical" href="${routeData.canonical}" />`
+      canonicalTag
     );
+  } else {
+    html = html.replace('</head>', `    ${canonicalTag}\n  </head>`);
   }
 
   // Replace og:title
@@ -256,12 +253,17 @@ function renderHtmlResponse(template: string, routeData: RouteMetadata): string 
     );
   }
 
-  // Replace og:url
-  if (html.includes('<meta property="og:url"')) {
+  // Replace or inject og:url
+  const ogUrlTag = `<meta property="og:url" content="${routeData.canonical}" />`;
+  if (html.includes('<!-- OG_URL_PLACEHOLDER -->')) {
+    html = html.replace('<!-- OG_URL_PLACEHOLDER -->', ogUrlTag);
+  } else if (html.includes('<meta property="og:url"')) {
     html = html.replace(
       /<meta property="og:url" content=".*?"\s*\/?>/i,
-      `<meta property="og:url" content="${routeData.canonical}" />`
+      ogUrlTag
     );
+  } else {
+    html = html.replace('</head>', `    ${ogUrlTag}\n  </head>`);
   }
 
   // Replace twitter:title
@@ -270,6 +272,17 @@ function renderHtmlResponse(template: string, routeData: RouteMetadata): string 
       /<meta name="twitter:title" content=".*?"\s*\/?>/i,
       `<meta name="twitter:title" content="${routeData.title}" />`
     );
+  }
+
+  // Set or replace twitter:url
+  const twitterUrlTag = `<meta name="twitter:url" content="${routeData.canonical}" />`;
+  if (html.includes('<meta name="twitter:url"')) {
+    html = html.replace(
+      /<meta name="twitter:url" content=".*?"\s*\/?>/i,
+      twitterUrlTag
+    );
+  } else {
+    html = html.replace('</head>', `    ${twitterUrlTag}\n  </head>`);
   }
 
   // Replace twitter:description
@@ -304,6 +317,11 @@ function renderHtmlResponse(template: string, routeData: RouteMetadata): string 
       }
     </script>`;
     html = html.replace('</head>', `${breadcrumbJsonLd}\n  </head>`);
+  }
+
+  // Inject structured FAQPage Schema for articles that have FAQs
+  if (routeData.faqSchemaJson) {
+    html = injectFaqSchemaIntoHtml(html, routeData.faqSchemaJson);
   }
 
   // Inject pre-rendered semantic HTML inside <div id="root">
@@ -712,20 +730,35 @@ Strictly output raw valid JSON only without markdown or backticks.`;
     }
   });
 
-  // Explicit route: XML Sitemaps (Sitemap Index & Individual Sitemaps)
-  app.get(['/sitemap.xml', '/sitemap-index.xml', '/sitemap-services.xml', '/sitemap-blog.xml', '/sitemap-locations.xml'], (req: Request, res: Response) => {
-    const filename = req.path.replace(/^\/+/, '');
-    const sitemapPath = path.resolve(process.cwd(), 'public', filename);
-    if (fs.existsSync(sitemapPath)) {
-      res.set({
-        'Content-Type': 'application/xml; charset=utf-8',
-        'X-Robots-Tag': 'all',
-        'Cache-Control': 'public, max-age=0, must-revalidate',
-      });
-      res.sendFile(sitemapPath);
-    } else {
-      res.status(404).type('text/plain').send(`Sitemap ${filename} not found`);
-    }
+  // Explicit route: Dynamic XML Sitemaps with X-Robots-Tag: noindex, follow
+  app.get('/sitemap.xml', (_req: Request, res: Response) => {
+    const xml = generateSitemapXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
+  });
+
+  app.get('/sitemap-blog.xml', (_req: Request, res: Response) => {
+    const xml = generateBlogSitemapXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
+  });
+
+  app.get('/sitemap-locations.xml', (_req: Request, res: Response) => {
+    const xml = generateLocationsSitemapXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
+  });
+
+  app.get('/sitemap-services.xml', (_req: Request, res: Response) => {
+    const xml = generateServicesSitemapXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
+  });
+
+  app.get('/sitemap-index.xml', (_req: Request, res: Response) => {
+    const xml = generateSitemapIndexXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
   });
 
   // Serve public assets (images, logos, manifests, favicons)

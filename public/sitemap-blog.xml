@@ -1,55 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <!-- Blog Hub & Regulatory Directory -->
-  <url>
-    <loc>https://www.bidtender4u.com/blog</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <!-- Long-Form Statutory & Regulatory Blog Articles -->
   <url>
     <loc>https://www.bidtender4u.com/blog/gem-startup-waiver-rule-173i-analysis</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
   <url>
     <loc>https://www.bidtender4u.com/blog/fssai-licence-mandate-food-canteen-tenders</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
   <url>
     <loc>https://www.bidtender4u.com/blog/gfr-170-msme-emd-exemption-guide</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
   <url>
     <loc>https://www.bidtender4u.com/blog/gem-oem-authorization-code-maf-compliance</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
   <url>
     <loc>https://www.bidtender4u.com/blog/class-3-combo-dsc-pki-cppp-nprocure</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
   <url>
     <loc>https://www.bidtender4u.com/blog/make-in-india-local-content-epc-strategy</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
+    <priority>0.85</priority>
   </url>
-
 </urlset>

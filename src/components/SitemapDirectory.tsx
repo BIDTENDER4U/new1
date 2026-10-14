@@ -49,7 +49,7 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
   const [copiedXml, setCopiedXml] = useState(false);
 
   const todayIso = useMemo(() => new Date().toISOString().split('T')[0], []);
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://bidtender4u.com';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.bidtender4u.com';
 
   // Construct comprehensive dynamic nodes
   const allNodes: SitemapNode[] = useMemo(() => {

@@ -32,6 +32,7 @@ interface LocationLandingHubProps {
   onOpenInquiry: (category?: string, service?: string, city?: string) => void;
   onOpenMapsModal?: (initialQuery?: string) => void;
   initialLocationId?: string;
+  onLocationChange?: (locationId: string) => void;
 }
 
 type TabMode = 'all-india' | 'cities' | 'states';
@@ -40,6 +41,7 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
   onOpenInquiry,
   onOpenMapsModal,
   initialLocationId,
+  onLocationChange,
 }) => {
   const [tabMode, setTabMode] = useState<TabMode>(
     initialLocationId && STATES_DATA.some(s => s.id === initialLocationId) 
@@ -55,6 +57,23 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
   );
   const [regionFilter, setRegionFilter] = useState<string>('All');
   const [expandedFaqIndex, setExpandedFaqIndex] = useState<number | null>(0);
+
+  const handleSelectCity = (cityId: string) => {
+    setSelectedCityId(cityId);
+    setExpandedFaqIndex(0);
+    onLocationChange?.(cityId);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', `/locations/${cityId}`);
+    }
+  };
+
+  const handleSelectState = (stateId: string) => {
+    setSelectedStateId(stateId);
+    onLocationChange?.(stateId);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', `/locations/${stateId}`);
+    }
+  };
 
   // Active Selected City Object
   const currentCity = useMemo(() => {
@@ -212,10 +231,7 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
                 {CITIES_DATA.slice(0, 14).map((city) => (
                   <button
                     key={city.id}
-                    onClick={() => {
-                      setSelectedCityId(city.id);
-                      setExpandedFaqIndex(0);
-                    }}
+                    onClick={() => handleSelectCity(city.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border ${
                       selectedCityId === city.id
                         ? 'bg-amber-500 text-slate-950 border-amber-500 font-extrabold shadow-sm'
@@ -500,8 +516,7 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
                   <button
                     key={city.id}
                     onClick={() => {
-                      setSelectedCityId(city.id);
-                      setExpandedFaqIndex(0);
+                      handleSelectCity(city.id);
                       window.scrollTo({ top: 320, behavior: 'smooth' });
                     }}
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer group ${
@@ -543,7 +558,7 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
               {STATES_DATA.map((state) => (
                 <button
                   key={state.id}
-                  onClick={() => setSelectedStateId(state.id)}
+                  onClick={() => handleSelectState(state.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border ${
                     selectedStateId === state.id
                       ? 'bg-amber-500 text-slate-950 border-amber-500 font-extrabold shadow-xs'
@@ -690,7 +705,7 @@ export const LocationLandingHub: React.FC<LocationLandingHubProps> = ({
                   <button
                     key={state.id}
                     onClick={() => {
-                      setSelectedStateId(state.id);
+                      handleSelectState(state.id);
                       window.scrollTo({ top: 320, behavior: 'smooth' });
                     }}
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${

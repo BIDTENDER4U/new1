@@ -1,5 +1,6 @@
 import React from 'react';
 import { Hero } from './Hero';
+import { TestimonialSlider } from './TestimonialSlider';
 import { TrustBadges } from './TrustBadges';
 import { ClientTestimonialCarousel } from './ClientTestimonialCarousel';
 
@@ -26,6 +27,12 @@ export const HomePage: React.FC<HomePageProps> = ({
         onOpenFreeSummaryModal={onOpenFreeSummaryModal}
       />
 
+      {/* Scrolling Client Success Testimonials with Stars & Company Names */}
+      <TestimonialSlider
+        onOpenInquiryModal={(category, service) => onOpenInquiryModal(category, service)}
+        onOpenChecklistModal={onOpenChecklistModal}
+      />
+
       {/* Statutory Accreditations & Trust Badges Section */}
       <TrustBadges
         onOpenInquiry={(category, service) => onOpenInquiryModal(category, service)}
@@ -41,3 +48,4 @@ export const HomePage: React.FC<HomePageProps> = ({
   );
 };
 
+export default HomePage;

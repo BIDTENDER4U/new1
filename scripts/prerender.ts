@@ -1,8 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { ROUTES_SEO, RouteMetadata } from '../src/lib/seoData';
+import { ROUTES_SEO, RouteMetadata, buildBlogRouteWithFaqSchema, injectFaqSchemaIntoHtml } from '../src/lib/seoData';
 import { BLOG_ARTICLES } from '../src/lib/blogArticlesData';
 import { STATES_DATA, CITIES_DATA } from '../src/lib/locationData';
+import {
+  generateSitemapXml,
+  generateBlogSitemapXml,
+  generateLocationsSitemapXml,
+  generateServicesSitemapXml,
+  generateSitemapIndexXml,
+} from '../lib/sitemap';
 
 const CANONICAL_BASE = 'https://www.bidtender4u.com';
 
@@ -11,24 +18,7 @@ const ALL_ROUTES: Record<string, RouteMetadata> = { ...ROUTES_SEO };
 
 for (const article of BLOG_ARTICLES) {
   const articlePath = `/blog/${article.slug}`;
-  ALL_ROUTES[articlePath] = {
-    path: articlePath,
-    title: `${article.title} | Bid Tender 4 U`,
-    description: article.metaDescription || article.subtitle,
-    keywords: `${article.category.toLowerCase()}, tender, bidding, government procurement, ${(article.keywords || []).join(', ').toLowerCase()}`,
-    canonical: `${CANONICAL_BASE}${articlePath}`,
-    breadcrumbTitle: article.title,
-    h1: article.title,
-    lead: article.subtitle,
-    keyPoints: article.keyTakeaways || [],
-    relatedLinks: [
-      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid preparation.' },
-      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory GeM compliance.' },
-      { label: 'Government Procurement Blog', path: '/blog', desc: 'Browse all articles.' },
-      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' }
-    ],
-    pageType: 'article'
-  };
+  ALL_ROUTES[articlePath] = buildBlogRouteWithFaqSchema(article);
 }
 
 if (ALL_ROUTES['/blog/fssai-licence-mandate-food-canteen-tenders']) {
@@ -117,12 +107,17 @@ function renderHtml(template: string, routeData: RouteMetadata): string {
     );
   }
 
-  // Replace canonical URL
-  if (html.includes('<link rel="canonical"')) {
+  // Replace or inject canonical URL
+  const canonicalTag = `<link rel="canonical" href="${routeData.canonical}" />`;
+  if (html.includes('<!-- CANONICAL_URL_PLACEHOLDER -->')) {
+    html = html.replace('<!-- CANONICAL_URL_PLACEHOLDER -->', canonicalTag);
+  } else if (html.includes('<link rel="canonical"')) {
     html = html.replace(
       /<link rel="canonical" href=".*?"\s*\/?>/i,
-      `<link rel="canonical" href="${routeData.canonical}" />`
+      canonicalTag
     );
+  } else {
+    html = html.replace('</head>', `    ${canonicalTag}\n  </head>`);
   }
 
   // Replace og:title
@@ -141,12 +136,17 @@ function renderHtml(template: string, routeData: RouteMetadata): string {
     );
   }
 
-  // Replace og:url
-  if (html.includes('<meta property="og:url"')) {
+  // Replace or inject og:url
+  const ogUrlTag = `<meta property="og:url" content="${routeData.canonical}" />`;
+  if (html.includes('<!-- OG_URL_PLACEHOLDER -->')) {
+    html = html.replace('<!-- OG_URL_PLACEHOLDER -->', ogUrlTag);
+  } else if (html.includes('<meta property="og:url"')) {
     html = html.replace(
       /<meta property="og:url" content=".*?"\s*\/?>/i,
-      `<meta property="og:url" content="${routeData.canonical}" />`
+      ogUrlTag
     );
+  } else {
+    html = html.replace('</head>', `    ${ogUrlTag}\n  </head>`);
   }
 
   // Replace twitter:title
@@ -157,12 +157,28 @@ function renderHtml(template: string, routeData: RouteMetadata): string {
     );
   }
 
+  // Set or replace twitter:url
+  const twitterUrlTag = `<meta name="twitter:url" content="${routeData.canonical}" />`;
+  if (html.includes('<meta name="twitter:url"')) {
+    html = html.replace(
+      /<meta name="twitter:url" content=".*?"\s*\/?>/i,
+      twitterUrlTag
+    );
+  } else {
+    html = html.replace('</head>', `    ${twitterUrlTag}\n  </head>`);
+  }
+
   // Replace twitter:description
   if (html.includes('<meta name="twitter:description"')) {
     html = html.replace(
       /<meta name="twitter:description" content=".*?"\s*\/?>/i,
       `<meta name="twitter:description" content="${routeData.description}" />`
     );
+  }
+
+  // Inject structured FAQPage Schema for articles that have FAQs
+  if (routeData.faqSchemaJson) {
+    html = injectFaqSchemaIntoHtml(html, routeData.faqSchemaJson);
   }
 
   return html;
@@ -180,8 +196,13 @@ async function prerender() {
   const baseTemplate = fs.readFileSync(indexHtmlPath, 'utf-8');
   let generatedCount = 0;
 
+  // 1. Explicitly render and overwrite root homepage: dist/index.html
+  const homeHtml = renderHtml(baseTemplate, ALL_ROUTES['/']);
+  fs.writeFileSync(indexHtmlPath, homeHtml, 'utf-8');
+  generatedCount++;
+
   for (const [routePath, routeData] of Object.entries(ALL_ROUTES)) {
-    if (routePath === '/') continue; // root is already index.html
+    if (routePath === '/') continue; // root already rendered above
 
     const cleanRoute = routePath.replace(/^\/+/, '');
     const pageHtml = renderHtml(baseTemplate, routeData);
@@ -204,21 +225,25 @@ async function prerender() {
     generatedCount++;
   }
 
-  // Ensure all sitemap XML files and robots.txt are copied to dist
-  const sitemapFiles = [
-    'sitemap-index.xml',
-    'sitemap-services.xml',
-    'sitemap-blog.xml',
-    'sitemap-locations.xml',
-    'sitemap.xml',
-    'robots.txt',
-  ];
+  // Dynamically generate all sitemaps using lib/sitemap.ts and write to public/ and dist/
+  const dynamicSitemaps: Record<string, string> = {
+    'sitemap.xml': generateSitemapXml(),
+    'sitemap-blog.xml': generateBlogSitemapXml(),
+    'sitemap-locations.xml': generateLocationsSitemapXml(),
+    'sitemap-services.xml': generateServicesSitemapXml(),
+    'sitemap-index.xml': generateSitemapIndexXml(),
+  };
 
-  for (const file of sitemapFiles) {
-    const srcPath = path.resolve(process.cwd(), 'public', file);
-    if (fs.existsSync(srcPath)) {
-      fs.copyFileSync(srcPath, path.resolve(distDir, file));
-    }
+  const publicDir = path.resolve(process.cwd(), 'public');
+  for (const [filename, content] of Object.entries(dynamicSitemaps)) {
+    fs.writeFileSync(path.resolve(publicDir, filename), content, 'utf-8');
+    fs.writeFileSync(path.resolve(distDir, filename), content, 'utf-8');
+  }
+
+  // Ensure robots.txt is present in dist
+  const robotsSrc = path.resolve(publicDir, 'robots.txt');
+  if (fs.existsSync(robotsSrc)) {
+    fs.copyFileSync(robotsSrc, path.resolve(distDir, 'robots.txt'));
   }
 
   console.log(`[Prerender] Successfully pre-rendered ${generatedCount} static pages into dist/ for static hosting.`);

@@ -34,6 +34,7 @@ interface ProcurementBlogProps {
   onOpenInquiry: (category?: string, service?: string) => void;
   onOpenFreeSummaryModal?: () => void;
   initialArticleSlug?: string;
+  onArticleChange?: (slug: string | null) => void;
 }
 
 export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
@@ -41,10 +42,24 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
   onOpenInquiry,
   onOpenFreeSummaryModal,
   initialArticleSlug,
+  onArticleChange,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All Articles');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeArticleSlug, setActiveArticleSlug] = useState<string | null>(initialArticleSlug || null);
+  const [activeArticleSlug, setActiveArticleSlug] = useState<string | null>(() => {
+    if (initialArticleSlug) return initialArticleSlug;
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+      if (pathname.startsWith('blog/')) {
+        return pathname.replace('blog/', '');
+      }
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      if (hash.startsWith('blog-')) {
+        return hash.replace('blog-', '');
+      }
+    }
+    return null;
+  });
   const [copiedNotification, setCopiedNotification] = useState<boolean>(false);
 
   // Sync with initial slug or window hash if it matches an article
@@ -89,6 +104,7 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
 
   const handleSelectArticle = (slug: string) => {
     setActiveArticleSlug(slug);
+    onArticleChange?.(slug);
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', `/blog/${slug}`);
     }
@@ -97,6 +113,7 @@ export const ProcurementBlog: React.FC<ProcurementBlogProps> = ({
 
   const handleBackToFeed = () => {
     setActiveArticleSlug(null);
+    onArticleChange?.(null);
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', '/blog');
     }

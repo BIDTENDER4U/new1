@@ -1,4 +1,4 @@
-import { FAQItem, PortalInfo, ServiceItem, TenderCategoryItem } from '../types';
+import { FAQItem, PortalInfo, ServiceItem, TenderCategoryItem } from '../types/index';
 
 export const BUSINESS_INFO = {
   name: 'Bid Tender 4 U',

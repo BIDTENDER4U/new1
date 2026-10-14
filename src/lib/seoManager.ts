@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
-import { ROUTES_SEO, RouteMetadata, CANONICAL_BASE } from './seoData';
+import {
+  ROUTES_SEO,
+  RouteMetadata,
+  CANONICAL_BASE,
+  buildBlogRouteWithFaqSchema,
+  buildFaqPageJsonLd,
+  getBlogArticleFaqs,
+} from './seoData';
 import { BLOG_ARTICLES } from './blogArticlesData';
 import { STATES_DATA, CITIES_DATA } from './locationData';
 import { BlogPostItem } from '../types/index';
@@ -34,34 +41,19 @@ export function resolvePageMetadata(
     }
   }
 
-  if (article) {
-    const articleCanonical = `${CANONICAL_BASE}/blog/${article.slug}`;
-    const keywordsStr = [
-      article.category,
-      'tender bidding',
-      'gem consultancy',
-      'government procurement',
-      ...(article.keywords || []),
-    ].join(', ');
+  // Check browser URL if running client-side
+  if (!article && typeof window !== 'undefined' && window.location.pathname.includes('/blog/')) {
+    const parts = window.location.pathname.split('/blog/');
+    const slugFromPath = parts[1]?.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (slugFromPath) {
+      article = BLOG_ARTICLES.find(
+        (a) => a.slug.toLowerCase() === slugFromPath
+      );
+    }
+  }
 
-    return {
-      path: `/blog/${article.slug}`,
-      title: `${article.title} | Bid Tender 4 U Analysis`,
-      description: article.metaDescription || article.subtitle,
-      keywords: keywordsStr,
-      canonical: articleCanonical,
-      breadcrumbTitle: article.title,
-      h1: article.title,
-      lead: article.subtitle,
-      keyPoints: article.keyTakeaways || [],
-      relatedLinks: [
-        { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Comprehensive bid preparation.' },
-        { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory vendor onboarding.' },
-        { label: 'Government Procurement Blog', path: '/blog', desc: 'Browse all articles.' },
-        { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' },
-      ],
-      pageType: 'article',
-    };
+  if (article) {
+    return buildBlogRouteWithFaqSchema(article);
   }
 
   // 1b. If a specific state or city location landing page is requested
@@ -135,29 +127,70 @@ export function resolvePageMetadata(
   }
 
   // 2. Normalize standard route keys
-  const rawKey = (pageIdOrPath || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  let rawKey = (pageIdOrPath || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+
+  // If page is home/empty and client-side, check browser location
+  if ((!rawKey || rawKey === 'home') && typeof window !== 'undefined') {
+    const browserPath = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (browserPath && browserPath !== 'home') {
+      rawKey = browserPath;
+    }
+  }
 
   let pathKey = '/' + rawKey;
   if (!rawKey || rawKey === 'home') {
     pathKey = '/';
-  } else if (rawKey === 'services' || rawKey === 'gem-tender-consultancy') {
-    pathKey = '/tender-bidding-consultancy';
-  } else if (rawKey === 'gem-documents') {
-    pathKey = '/gem-registration';
-  } else if (rawKey === 'contact') {
+  } else if (rawKey === 'contact' || rawKey === 'contact-us') {
     pathKey = '/contact-us';
-  } else if (rawKey === 'about') {
+  } else if (rawKey === 'about' || rawKey === 'about-us') {
     pathKey = '/about-us';
-  } else if (rawKey === 'payment' || rawKey === 'pay') {
+  } else if (rawKey === 'payment' || rawKey === 'pay' || rawKey === 'payment-details') {
     pathKey = '/payment-details';
-  } else if (rawKey === 'msme-startup-tenders') {
-    pathKey = '/msme-startup-tenders';
-  } else if (rawKey === 'iso-dsc-certifications') {
-    pathKey = '/iso-dsc-certifications';
   }
 
-  // Return matching route metadata or default to homepage
-  return ROUTES_SEO[pathKey] || ROUTES_SEO['/'];
+  // If matched in ROUTES_SEO, return exact route metadata
+  if (ROUTES_SEO[pathKey]) {
+    return ROUTES_SEO[pathKey];
+  }
+
+  // True homepage
+  if (pathKey === '/') {
+    return ROUTES_SEO['/'];
+  }
+
+  // Dynamic self-referencing metadata to ensure no subpage ever inherits homepage canonical
+  const cleanPath = pathKey.replace(/^\/+/, '');
+  const isArticle = cleanPath.startsWith('blog/');
+  const isLocation = cleanPath.startsWith('locations/');
+
+  const formattedTitle = cleanPath
+    .split('/')
+    .pop()!
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+  return {
+    path: pathKey,
+    title: `${formattedTitle} | Bid Tender 4 U`,
+    description: `Government tender bidding consultancy, GeM registration, and compliance services for ${formattedTitle}.`,
+    canonical: `${CANONICAL_BASE}${pathKey}`,
+    breadcrumbTitle: formattedTitle,
+    h1: formattedTitle,
+    lead: `Expert tender and public procurement advisory from Bid Tender 4 U.`,
+    keyPoints: [
+      'Comprehensive tender document audit and qualification analysis.',
+      'Statutory compliance under GFR 2017 and GeM guidelines.',
+      'Class-3 Combo DSC and ISO certification advisory.',
+    ],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Statutory compliance.' },
+      { label: 'Procurement Blog', path: '/blog', desc: 'Regulatory analysis.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Direct intake desk.' },
+    ],
+    pageType: isArticle ? 'article' : isLocation ? 'service' : 'website',
+  };
 }
 
 /**
@@ -181,18 +214,24 @@ function setOrCreateMeta(
 }
 
 /**
- * Safely creates or updates the link[rel="canonical"] tag in document.head.
+ * Safely creates or updates the link[rel="canonical"] tag in document.head,
+ * ensuring strictly one canonical link exists.
  */
 function setOrCreateCanonical(canonicalUrl: string): void {
   if (typeof document === 'undefined') return;
 
-  let el = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-  if (!el) {
-    el = document.createElement('link');
+  const links = document.querySelectorAll('link[rel="canonical"]');
+  if (links.length > 0) {
+    (links[0] as HTMLLinkElement).setAttribute('href', canonicalUrl);
+    for (let i = 1; i < links.length; i++) {
+      links[i].remove();
+    }
+  } else {
+    const el = document.createElement('link');
     el.setAttribute('rel', 'canonical');
+    el.setAttribute('href', canonicalUrl);
     document.head.appendChild(el);
   }
-  el.setAttribute('href', canonicalUrl);
 }
 
 /**
@@ -279,6 +318,23 @@ function updateJsonLd(routeData: RouteMetadata, article?: BlogPostItem | null): 
       },
       inLanguage: 'en-IN',
     });
+  }
+
+  // Inject or update structured FAQPage JSON-LD Schema for rich Google search snippets
+  const faqScriptId = 'bidtender4u-dynamic-faq-jsonld';
+  let faqScriptEl = document.getElementById(faqScriptId) as HTMLScriptElement | null;
+  const faqs = routeData.faqItems || (article ? getBlogArticleFaqs(article.slug, article) : []);
+
+  if (faqs && faqs.length > 0) {
+    if (!faqScriptEl) {
+      faqScriptEl = document.createElement('script');
+      faqScriptEl.id = faqScriptId;
+      faqScriptEl.type = 'application/ld+json';
+      document.head.appendChild(faqScriptEl);
+    }
+    faqScriptEl.textContent = routeData.faqSchemaJson || buildFaqPageJsonLd(faqs);
+  } else if (faqScriptEl) {
+    faqScriptEl.remove();
   }
 }
 

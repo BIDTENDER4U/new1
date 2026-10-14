@@ -484,17 +484,26 @@ export const Header: React.FC<HeaderProps> = ({
               <ArrowUpRight className="w-3.5 h-3.5 text-[#D4AF70] stroke-[3]" />
             </button>
 
-            {/* Clean Hamburger Menu Button */}
+            {/* Clean Hamburger Menu Button with smooth toggle icon animation */}
             <button
               type="button"
               onClick={toggleMenu}
-              className="p-2 sm:px-3 sm:py-2 text-[#1D3557] bg-white hover:bg-slate-50 rounded-xl border border-[#D9E0E8] hover:border-[#1D3557] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs group focus:outline-none shrink-0"
-              aria-label="Toggle navigation menu"
-              title="Open Navigation Menu"
+              className={`p-2 sm:px-3 sm:py-2 text-[#1D3557] bg-white hover:bg-slate-50 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs group focus:outline-none shrink-0 ${
+                menuOpen ? 'border-amber-500 bg-amber-50/60 text-amber-800' : 'border-[#D9E0E8] hover:border-[#1D3557]'
+              }`}
+              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              title={menuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+              aria-expanded={menuOpen}
             >
-              <Menu className="w-4 h-4 text-[#1D3557] group-hover:scale-105 transition-transform stroke-[2.5]" />
-              <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider text-[#1D3557]">
-                Menu
+              <div className={`nav-menu-toggle-icon transition-transform duration-300 ${menuOpen ? 'rotate-90 scale-105 text-amber-700' : 'text-[#1D3557] group-hover:scale-105'}`}>
+                {menuOpen ? (
+                  <X className="w-4 h-4 stroke-[2.5]" />
+                ) : (
+                  <Menu className="w-4 h-4 stroke-[2.5]" />
+                )}
+              </div>
+              <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">
+                {menuOpen ? 'Close' : 'Menu'}
               </span>
             </button>
           </div>
@@ -705,17 +714,19 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Slide-over Full Navigation Drawer Overlay */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200 text-left">
-          {/* Dimmed backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-            onClick={closeMenu}
-          />
+      {/* Slide-over Full Navigation Drawer Overlay with smooth CSS transitions */}
+      <div 
+        className={`nav-drawer-overlay ${menuOpen ? 'nav-drawer-open' : ''}`}
+        aria-hidden={!menuOpen}
+      >
+        {/* Dimmed backdrop with smooth opacity transition */}
+        <div
+          className="nav-drawer-backdrop"
+          onClick={closeMenu}
+        />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-            <div className="w-screen max-w-md bg-white text-slate-900 shadow-2xl border-l border-slate-200 flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10 pointer-events-auto">
+          <div className="nav-drawer-panel w-screen max-w-md bg-white text-slate-900 shadow-2xl border-l border-slate-200 flex flex-col">
               {/* Drawer Top Header */}
               <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2.5">
@@ -967,7 +978,6 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         </div>
-      )}
     </>
   );
 };

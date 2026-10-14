@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from './components/Header';
 import { HomePage } from './components/HomePage';
 import { CategoriesShowcase } from './components/CategoriesShowcase';
@@ -54,16 +54,79 @@ export type PageId =
   | 'portals' 
   | 'faqs' 
   | 'sitemap' 
-  | 'blog';
+  | 'blog'
+  | 'free-tender-summary'
+  | 'payment-details'
+  | 'gem-tender-consultancy'
+  | 'msme-startup-tenders'
+  | 'iso-dsc-certifications';
+
+function getInitialRouteState(): {
+  page: PageId;
+  blogSlug?: string;
+  locationId: string;
+  isFreeSummary: boolean;
+  isPayment: boolean;
+} {
+  if (typeof window === 'undefined') {
+    return { page: 'home', blogSlug: undefined, locationId: 'all-india', isFreeSummary: false, isPayment: false };
+  }
+  const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+  const hash = window.location.hash.replace('#', '').toLowerCase();
+
+  const isFreeSummary =
+    pathname === 'free-tender-summary' ||
+    pathname === 'tender-summary' ||
+    hash === 'tender-summary' ||
+    hash === 'free-summary' ||
+    hash === 'summary';
+
+  const isPayment =
+    pathname === 'payment' ||
+    pathname === 'payment-details' ||
+    pathname === 'pay' ||
+    hash === 'payment' ||
+    hash === 'payment-details' ||
+    hash === 'pay';
+
+  if (pathname.startsWith('blog/')) {
+    const slug = pathname.replace('blog/', '');
+    return { page: 'blog', blogSlug: slug, locationId: 'all-india', isFreeSummary, isPayment };
+  }
+  if (hash.startsWith('blog-')) {
+    const slug = hash.replace('blog-', '');
+    return { page: 'blog', blogSlug: slug, locationId: 'all-india', isFreeSummary, isPayment };
+  }
+
+  if (pathname.startsWith('locations/') || hash.startsWith('locations-')) {
+    const locId = pathname.startsWith('locations/')
+      ? pathname.replace('locations/', '')
+      : hash.replace('locations-', '');
+    return { page: 'locations', blogSlug: undefined, locationId: locId, isFreeSummary, isPayment };
+  }
+
+  const rawRoute = pathname || hash;
+  if (!rawRoute || rawRoute === 'home') {
+    return { page: 'home', blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
+  }
+
+  const normalizedRoute: PageId =
+    rawRoute === 'contact' ? 'contact-us' :
+    rawRoute === 'about' ? 'about-us' :
+    (rawRoute as PageId);
+
+  return { page: normalizedRoute, blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
+}
 
 export default function App() {
   const { theme } = useTheme();
-  const [currentPage, setCurrentPage] = useState<PageId>('home');
-  const [blogArticleSlug, setBlogArticleSlug] = useState<string | undefined>(undefined);
+  const initialRoute = useMemo(() => getInitialRouteState(), []);
+  const [currentPage, setCurrentPage] = useState<PageId>(initialRoute.page);
+  const [blogArticleSlug, setBlogArticleSlug] = useState<string | undefined>(initialRoute.blogSlug);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
-  const [isFreeSummaryOpen, setIsFreeSummaryOpen] = useState(false);
+  const [isFreeSummaryOpen, setIsFreeSummaryOpen] = useState(initialRoute.isFreeSummary);
   const [isLettersModalOpen, setIsLettersModalOpen] = useState(false);
   const [defaultLetterType, setDefaultLetterType] = useState<'oem' | 'representation' | 'acceptance'>('oem');
   const [isRadarModalOpen, setIsRadarModalOpen] = useState(false);
@@ -71,20 +134,25 @@ export default function App() {
   const [isMapsModalOpen, setIsMapsModalOpen] = useState(false);
   const [mapsInitialQuery, setMapsInitialQuery] = useState('');
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(initialRoute.isPayment);
   const [selectedService, setSelectedService] = useState<string>('Tender Document Analysis & Eligibility Audit');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('all-india');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>(initialRoute.locationId);
 
   // React Hook: Dynamically synchronize canonical, Open Graph, Twitter cards, and Schema.org JSON-LD
   usePageSeo({
-    page: currentPage,
+    page:
+      currentPage === 'locations' && selectedLocationId && selectedLocationId !== 'all-india'
+        ? `locations/${selectedLocationId}`
+        : currentPage === 'blog' && blogArticleSlug
+        ? `blog/${blogArticleSlug}`
+        : currentPage,
     articleSlug: blogArticleSlug,
   });
 
   // Imperative helper for immediate document head synchronization on route change
-  const updateDocumentHead = (page: PageId, slug?: string) => {
+  const updateDocumentHead = (page: string, slug?: string) => {
     const meta = resolvePageMetadata(page, slug);
     applySeoToDocument(meta);
   };
@@ -161,18 +229,17 @@ export default function App() {
 
       // Normalize aliases
       const normalizedRoute: PageId =
-        rawRoute === 'gem-registration' || rawRoute === 'gem-documents' ? 'gem-registration' :
-        rawRoute === 'tender-bidding-consultancy' || rawRoute === 'services' || rawRoute === 'gem-tender-consultancy' ? 'tender-bidding-consultancy' :
-        rawRoute === 'contact-us' || rawRoute === 'contact' ? 'contact-us' :
-        rawRoute === 'certifications' || rawRoute === 'msme-startup-tenders' || rawRoute === 'iso-dsc-certifications' ? 'certifications' :
-        rawRoute === 'free-tender-summary' ? 'home' :
-        rawRoute as PageId;
+        rawRoute === 'contact' ? 'contact-us' :
+        rawRoute === 'about' ? 'about-us' :
+        (rawRoute as PageId);
 
       const validPages: PageId[] = [
         'home', 'tender-bidding-consultancy', 'gem-registration', 'gem-product-listing',
         'oem-services', 'about-us', 'contact-us', 'locations', 'insights', 'stories',
         'services', 'gem-documents', 'contact',
-        'certifications', 'categories', 'portals', 'faqs', 'sitemap', 'blog'
+        'certifications', 'categories', 'portals', 'faqs', 'sitemap', 'blog',
+        'free-tender-summary', 'payment-details', 'gem-tender-consultancy',
+        'msme-startup-tenders', 'iso-dsc-certifications'
       ];
 
       if (validPages.includes(normalizedRoute)) {
@@ -223,25 +290,34 @@ export default function App() {
     const clean = page.toLowerCase().replace(/^\/+|\/+$/g, '');
     if (clean === 'payment' || clean === 'payment-details' || clean === 'pay') {
       setIsPaymentModalOpen(true);
-      return;
-    }
-    if (clean === 'free-tender-summary' || clean === 'tender-summary' || clean === 'free-summary' || clean === 'summary') {
+      targetPage = 'payment-details';
+      targetPath = '/payment-details';
+    } else if (clean === 'free-tender-summary' || clean === 'tender-summary' || clean === 'free-summary' || clean === 'summary') {
       setIsFreeSummaryOpen(true);
-      return;
-    }
-    if (clean === 'gem-registration' || clean === 'gem-documents') {
+      targetPage = 'free-tender-summary';
+      targetPath = '/free-tender-summary';
+    } else if (clean === 'gem-registration') {
       targetPage = 'gem-registration';
       targetPath = '/gem-registration';
+    } else if (clean === 'gem-documents') {
+      targetPage = 'gem-documents';
+      targetPath = '/gem-documents';
     } else if (clean === 'gem-product-listing') {
       targetPage = 'gem-product-listing';
       targetPath = '/gem-product-listing';
     } else if (clean === 'oem-services') {
       targetPage = 'oem-services';
       targetPath = '/oem-services';
-    } else if (clean === 'tender-bidding-consultancy' || clean === 'services') {
+    } else if (clean === 'services') {
+      targetPage = 'services';
+      targetPath = '/services';
+    } else if (clean === 'tender-bidding-consultancy') {
       targetPage = 'tender-bidding-consultancy';
       targetPath = '/tender-bidding-consultancy';
-    } else if (clean === 'about-us') {
+    } else if (clean === 'gem-tender-consultancy') {
+      targetPage = 'gem-tender-consultancy';
+      targetPath = '/gem-tender-consultancy';
+    } else if (clean === 'about-us' || clean === 'about') {
       targetPage = 'about-us';
       targetPath = '/about-us';
     } else if (clean === 'contact-us' || clean === 'contact') {
@@ -649,6 +725,10 @@ export default function App() {
                 setIsMapsModalOpen(true);
               }}
               initialLocationId={selectedLocationId}
+              onLocationChange={(locId) => {
+                setSelectedLocationId(locId);
+                updateDocumentHead(`locations/${locId}`);
+              }}
             />
           </div>
         )}
@@ -661,6 +741,14 @@ export default function App() {
               onOpenInquiry={handleOpenInquiryForm}
               onOpenFreeSummaryModal={() => setIsFreeSummaryOpen(true)}
               initialArticleSlug={blogArticleSlug}
+              onArticleChange={(slug) => {
+                setBlogArticleSlug(slug || undefined);
+                if (slug) {
+                  updateDocumentHead('blog', slug);
+                } else {
+                  updateDocumentHead('blog');
+                }
+              }}
             />
           </div>
         )}
@@ -751,6 +839,8 @@ export default function App() {
         onOpenChecklistModal={() => setIsChecklistOpen(true)}
         onScrollToForm={() => handleOpenInquiryForm()}
         onOpenFreeSummaryModal={() => setIsFreeSummaryOpen(true)}
+        isMenuOpen={isMenuOpen}
+        onToggleMenu={() => setIsMenuOpen(!isMenuOpen)}
       />
     </div>
   );
