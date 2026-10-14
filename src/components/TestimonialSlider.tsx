@@ -190,7 +190,8 @@ export const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
 
   return (
     <section 
-      aria-label="Client Success Testimonials" 
+      id="client-testimonials-section"
+      aria-label="Verified Client Success Testimonials" 
       className="py-10 sm:py-14 bg-[#F8FAFC] border-y border-[#D9E0E8] overflow-hidden relative selection:bg-amber-400 selection:text-slate-950"
     >
       {/* Background Subtle Accent Gradients */}
