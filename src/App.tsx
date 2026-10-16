@@ -24,6 +24,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { WhatsAppFloatingButton } from './components/WhatsAppFloatingButton';
 import { FreeTenderSummaryModal } from './components/FreeTenderSummaryModal';
 import { ProcurementBlog } from './components/ProcurementBlog';
+import { TendersByKeywords } from './components/TendersByKeywords';
 import { StatutoryLettersModal } from './components/StatutoryLettersModal';
 import { LiveTenderRadarModal } from './components/LiveTenderRadarModal';
 import { GoogleMapsLocatorModal } from './components/GoogleMapsLocatorModal';
@@ -59,17 +60,19 @@ export type PageId =
   | 'payment-details'
   | 'gem-tender-consultancy'
   | 'msme-startup-tenders'
-  | 'iso-dsc-certifications';
+  | 'iso-dsc-certifications'
+  | 'tenders-by-keywords';
 
 function getInitialRouteState(): {
   page: PageId;
   blogSlug?: string;
+  keywordSlug?: string;
   locationId: string;
   isFreeSummary: boolean;
   isPayment: boolean;
 } {
   if (typeof window === 'undefined') {
-    return { page: 'home', blogSlug: undefined, locationId: 'all-india', isFreeSummary: false, isPayment: false };
+    return { page: 'home', blogSlug: undefined, keywordSlug: undefined, locationId: 'all-india', isFreeSummary: false, isPayment: false };
   }
   const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
   const hash = window.location.hash.replace('#', '').toLowerCase();
@@ -102,12 +105,23 @@ function getInitialRouteState(): {
     const locId = pathname.startsWith('locations/')
       ? pathname.replace('locations/', '')
       : hash.replace('locations-', '');
-    return { page: 'locations', blogSlug: undefined, locationId: locId, isFreeSummary, isPayment };
+    return { page: 'locations', blogSlug: undefined, keywordSlug: undefined, locationId: locId, isFreeSummary, isPayment };
+  }
+
+  if (pathname.startsWith('tenders-by-keywords/') || hash.startsWith('tenders-by-keywords-')) {
+    const kwSlug = pathname.startsWith('tenders-by-keywords/')
+      ? pathname.replace('tenders-by-keywords/', '')
+      : hash.replace('tenders-by-keywords-', '');
+    return { page: 'tenders-by-keywords', keywordSlug: kwSlug, blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
+  }
+
+  if (pathname === 'tenders-by-keywords' || hash === 'tenders-by-keywords') {
+    return { page: 'tenders-by-keywords', keywordSlug: undefined, blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
   }
 
   const rawRoute = pathname || hash;
   if (!rawRoute || rawRoute === 'home') {
-    return { page: 'home', blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
+    return { page: 'home', blogSlug: undefined, keywordSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
   }
 
   const normalizedRoute: PageId =
@@ -115,7 +129,7 @@ function getInitialRouteState(): {
     rawRoute === 'about' ? 'about-us' :
     (rawRoute as PageId);
 
-  return { page: normalizedRoute, blogSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
+  return { page: normalizedRoute, blogSlug: undefined, keywordSlug: undefined, locationId: 'all-india', isFreeSummary, isPayment };
 }
 
 export default function App() {
@@ -123,6 +137,7 @@ export default function App() {
   const initialRoute = useMemo(() => getInitialRouteState(), []);
   const [currentPage, setCurrentPage] = useState<PageId>(initialRoute.page);
   const [blogArticleSlug, setBlogArticleSlug] = useState<string | undefined>(initialRoute.blogSlug);
+  const [selectedKeywordSlug, setSelectedKeywordSlug] = useState<string | undefined>(initialRoute.keywordSlug);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
@@ -213,7 +228,30 @@ export default function App() {
         setSelectedLocationId(locId);
         setCurrentPage('locations');
         setBlogArticleSlug(undefined);
+        setSelectedKeywordSlug(undefined);
         updateDocumentHead('locations', locId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Handle tenders-by-keywords paths: /tenders-by-keywords or /tenders-by-keywords/slug
+      if (pathname.startsWith('tenders-by-keywords/') || hash.startsWith('tenders-by-keywords-')) {
+        const kwSlug = pathname.startsWith('tenders-by-keywords/')
+          ? pathname.replace('tenders-by-keywords/', '')
+          : hash.replace('tenders-by-keywords-', '');
+        setSelectedKeywordSlug(kwSlug);
+        setCurrentPage('tenders-by-keywords');
+        setBlogArticleSlug(undefined);
+        updateDocumentHead(`tenders-by-keywords/${kwSlug}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      if (pathname === 'tenders-by-keywords' || hash === 'tenders-by-keywords') {
+        setSelectedKeywordSlug(undefined);
+        setCurrentPage('tenders-by-keywords');
+        setBlogArticleSlug(undefined);
+        updateDocumentHead('tenders-by-keywords');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -223,6 +261,7 @@ export default function App() {
       if (!rawRoute || rawRoute === 'home') {
         setCurrentPage('home');
         setBlogArticleSlug(undefined);
+        setSelectedKeywordSlug(undefined);
         updateDocumentHead('home');
         return;
       }
@@ -239,7 +278,7 @@ export default function App() {
         'services', 'gem-documents', 'contact',
         'certifications', 'categories', 'portals', 'faqs', 'sitemap', 'blog',
         'free-tender-summary', 'payment-details', 'gem-tender-consultancy',
-        'msme-startup-tenders', 'iso-dsc-certifications'
+        'msme-startup-tenders', 'iso-dsc-certifications', 'tenders-by-keywords'
       ];
 
       if (validPages.includes(normalizedRoute)) {
@@ -283,6 +322,22 @@ export default function App() {
       setCurrentPage('blog');
       window.history.pushState({}, '', targetPath);
       updateDocumentHead('blog', articleSlug);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (page === 'tenders-by-keywords') {
+      if (articleSlug) {
+        targetPath = `/tenders-by-keywords/${articleSlug}`;
+        setSelectedKeywordSlug(articleSlug);
+      } else {
+        targetPath = '/tenders-by-keywords';
+        setSelectedKeywordSlug(undefined);
+      }
+      setBlogArticleSlug(undefined);
+      setCurrentPage('tenders-by-keywords');
+      window.history.pushState({}, '', targetPath);
+      updateDocumentHead(articleSlug ? `tenders-by-keywords/${articleSlug}` : 'tenders-by-keywords');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -749,6 +804,17 @@ export default function App() {
                   updateDocumentHead('blog');
                 }
               }}
+            />
+          </div>
+        )}
+
+        {/* PAGE: TENDERS BY KEYWORDS & TRADE SECTOR DIRECTORY */}
+        {currentPage === 'tenders-by-keywords' && (
+          <div className="animate-in fade-in duration-200">
+            <TendersByKeywords
+              onOpenInquiry={handleOpenInquiryForm}
+              onNavigate={navigateTo}
+              initialKeywordSlug={selectedKeywordSlug}
             />
           </div>
         )}

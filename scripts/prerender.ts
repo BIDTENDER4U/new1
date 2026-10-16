@@ -8,6 +8,7 @@ import {
   generateBlogSitemapXml,
   generateLocationsSitemapXml,
   generateServicesSitemapXml,
+  generateKeywordsSitemapXml,
   generateSitemapIndexXml,
 } from '../lib/sitemap';
 
@@ -231,6 +232,7 @@ async function prerender() {
     'sitemap-blog.xml': generateBlogSitemapXml(),
     'sitemap-locations.xml': generateLocationsSitemapXml(),
     'sitemap-services.xml': generateServicesSitemapXml(),
+    'sitemap-keywords.xml': generateKeywordsSitemapXml(),
     'sitemap-index.xml': generateSitemapIndexXml(),
   };
 

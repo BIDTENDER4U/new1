@@ -28,7 +28,8 @@ import {
   Search,
   CornerDownLeft,
   ChevronDown,
-  QrCode
+  QrCode,
+  Hash
 } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../lib/constants';
 import { searchIndex, SearchItem } from '../lib/searchIndex';
@@ -221,6 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
       links: [
         { id: 'certifications', path: '/certifications', label: 'Startup, FSSAI, ISO & DSC', icon: Award, desc: 'DPIIT Startup India, FSSAI licence, ISO & DSC' },
         { id: 'categories', path: '/categories', label: '12 Tender Categories', icon: Building2, desc: 'Civil, medical, solar, IT, security & more' },
+        { id: 'tenders-by-keywords', path: '/tenders-by-keywords', label: 'Tenders by Keywords', icon: Hash, desc: 'Keyword directory for all goods, works & service tenders' },
         { id: 'portals', path: '/portals', label: 'E-Procurement Portals', icon: Globe, desc: 'GeM, CPPP, IREPS, CPWD & state boards' },
         { id: 'locations', path: '/locations', label: 'All India & Cities Hub', icon: MapPin, desc: 'Pan-India, 28 states & 50+ key cities' },
         { id: 'sitemap', path: '/sitemap', label: 'Dynamic Sitemap', icon: Network, desc: 'Deep-crawl directory & XML generator' },
@@ -868,6 +870,35 @@ export const Header: React.FC<HeaderProps> = ({
                     <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
                   </div>
                 )}
+
+                {/* Tenders by Keywords & Trades Card in Drawer */}
+                <div
+                  onClick={() => {
+                    handleNavClick('tenders-by-keywords');
+                  }}
+                  className="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100/80 border border-amber-300 flex items-center justify-between gap-3 shadow-xs cursor-pointer group transition-all"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                      <Hash className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-slate-900 block">
+                          Tenders by Keywords & Trades
+                        </span>
+                        <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-mono">
+                          Directory
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-600 font-medium block">
+                        Browse all goods, works & services with 1-click inquiry
+                      </span>
+                    </div>
+                  </div>
+
+                  <ArrowRight className="w-4 h-4 text-amber-800 group-hover:translate-x-1 transition-transform shrink-0 stroke-[3]" />
+                </div>
 
                 {navigationSections.map((section, sIdx) => (
                   <div key={sIdx} className="space-y-2">

@@ -2,18 +2,22 @@
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://www.bidtender4u.com/sitemap-services.xml</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-15</lastmod>
   </sitemap>
   <sitemap>
     <loc>https://www.bidtender4u.com/sitemap-blog.xml</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-15</lastmod>
   </sitemap>
   <sitemap>
     <loc>https://www.bidtender4u.com/sitemap-locations.xml</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-15</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.bidtender4u.com/sitemap-keywords.xml</loc>
+    <lastmod>2026-10-15</lastmod>
   </sitemap>
   <sitemap>
     <loc>https://www.bidtender4u.com/sitemap.xml</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-15</lastmod>
   </sitemap>
 </sitemapindex>

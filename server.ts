@@ -12,7 +12,9 @@ import {
   generateBlogSitemapXml,
   generateLocationsSitemapXml,
   generateServicesSitemapXml,
+  generateKeywordsSitemapXml,
   generateSitemapIndexXml,
+  generateSitemapDirectoryHtml,
   getSitemapHeaders,
 } from './lib/sitemap';
 
@@ -755,10 +757,21 @@ Strictly output raw valid JSON only without markdown or backticks.`;
     return res.send(xml);
   });
 
+  app.get('/sitemap-keywords.xml', (_req: Request, res: Response) => {
+    const xml = generateKeywordsSitemapXml();
+    res.set(getSitemapHeaders());
+    return res.send(xml);
+  });
+
   app.get('/sitemap-index.xml', (_req: Request, res: Response) => {
     const xml = generateSitemapIndexXml();
     res.set(getSitemapHeaders());
     return res.send(xml);
+  });
+
+  app.get(['/sitemap-directory', '/sitemap.html'], (_req: Request, res: Response) => {
+    const html = generateSitemapDirectoryHtml();
+    res.type('text/html; charset=utf-8').send(html);
   });
 
   // Serve public assets (images, logos, manifests, favicons)

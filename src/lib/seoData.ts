@@ -1,5 +1,6 @@
 import { BlogPostItem } from '../types/index';
 import { BLOG_ARTICLES } from './blogArticlesData';
+import { TENDER_KEYWORDS_DATA, TenderKeywordItem } from './tenderKeywordsData';
 
 export interface FAQSchemaItem {
   question: string;
@@ -356,6 +357,32 @@ export const ROUTES_SEO: Record<string, RouteMetadata> = {
       { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Bidding services tailored for all categories.' },
       { label: 'GeM Product Listing', path: '/gem-product-listing', desc: 'Upload products in your industry category.' },
       { label: 'Portals Matrix', path: '/portals', desc: 'Central and state procurement portals covered.' }
+    ],
+    pageType: 'service'
+  },
+  '/tenders-by-keywords': {
+    path: '/tenders-by-keywords',
+    title: 'Tenders by Keywords & Sectors | Tender Bidding Consultancy | Bid Tender 4 U',
+    description: 'Explore government tenders by keywords and trades. Comprehensive tender bidding consultancy, Packet-A technical packaging, BOQ pricing & GeM OEM authorization for all Indian public procurement categories.',
+    ogTitle: 'Tenders by Keywords: All India Tender Bidding Consultancy',
+    ogDescription: 'Find tenders by keyword across Civil, Electrical, Healthcare, IT, Security, and Logistics. 100% technical qualification, GFR 170 MSME EMD waiver & portal assistance.',
+    keywords: 'tenders by keywords, tenders by products, government tender keywords, gem tenders by category, tender bidding consultancy, tender directory, public procurement keywords, tender consultant ahmedabad',
+    canonical: `${CANONICAL_BASE}/tenders-by-keywords`,
+    breadcrumbTitle: 'Tenders by Keywords',
+    h1: 'Government Tenders by Keywords & Trade Sectors',
+    lead: 'Specialized, zero-disqualification tender bidding consultancy across every goods, works, and service keyword on GeM 4.0, CPPP, and state procurement portals.',
+    keyPoints: [
+      'Comprehensive keyword directory covering Civil, Healthcare, Electrical, IT, Security, Logistics, and Industrial trades.',
+      'One-click direct inquiry: Select your trade keyword to instantly request tender compliance review.',
+      'Packet-A technical folder packaging: CA UDIN certificates, turnover compliance, and past experience proof.',
+      'Statutory waiver assistance: 100% MSME EMD exemption under GFR 2017 Rule 170 and DPIIT startup relaxations.',
+      'Official GeM OEM authorization codes, catalog management, and L1 reverse auction strategy.'
+    ],
+    relatedLinks: [
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'End-to-end tender bidding and technical folder compilation.' },
+      { label: 'GeM Registration & Onboarding', path: '/gem-registration', desc: 'Primary seller, OEM panel & reseller onboarding checklist.' },
+      { label: 'Dynamic Sitemap & Crawl Hub', path: '/sitemap', desc: 'Browse all public indexable routes.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Submit tender document for preliminary audit.' }
     ],
     pageType: 'service'
   },
@@ -906,6 +933,55 @@ export function registerBlogArticlesInRoutesSeo(): void {
 
 // Automatically register on module load so ROUTES_SEO includes all blog articles with FAQ Schema
 registerBlogArticlesInRoutesSeo();
+
+/**
+ * Builds RouteMetadata for a specific tender keyword / trade sector.
+ */
+export function buildKeywordRoute(keyword: TenderKeywordItem): RouteMetadata {
+  const keywordPath = `/tenders-by-keywords/${keyword.id}`;
+  const canonicalUrl = `${CANONICAL_BASE}${keywordPath}`;
+
+  return {
+    path: keywordPath,
+    title: `${keyword.name} Consultancy | Bid Tender 4 U`,
+    description: `Specialized tender consultancy for ${keyword.name}. Technical bid preparation, BOQ financial pricing, GFR 170 MSME EMD waiver & GeM 4.0 pairing.`,
+    ogTitle: `${keyword.name} Consultancy & GeM Advisory`,
+    ogDescription: `Win ${keyword.shortName} contracts with zero disqualification. Expert NIT reviews, Packet-A packaging & portal submission across India.`,
+    keywords: `${keyword.keywords.join(', ')}, ${keyword.name.toLowerCase()}, tender consultancy, gem bidding, ${keyword.category.toLowerCase()}`,
+    canonical: canonicalUrl,
+    breadcrumbTitle: keyword.shortName,
+    h1: `${keyword.name} Consultancy Services`,
+    lead: keyword.description,
+    keyPoints: [
+      `Primary Procurement Portals: ${keyword.typicalPortals.join(', ')}.`,
+      `Typical Tender Volume: ${keyword.sampleTenderValue}.`,
+      `Key Technical Documents Prepared: ${keyword.mandatoryDocs.join(', ')}.`,
+      '100% Technical Bid Acceptance Guarantee with CA UDIN certification.',
+      'GFR 2017 Rule 170 MSME EMD Exemption & GeM OEM authorization pairing.'
+    ],
+    relatedLinks: [
+      { label: 'All Tenders by Keywords', path: '/tenders-by-keywords', desc: 'Browse complete keyword directory.' },
+      { label: 'Tender Bidding Consultancy', path: '/tender-bidding-consultancy', desc: 'Expert bid packaging & technical folder audit.' },
+      { label: 'GeM Registration', path: '/gem-registration', desc: 'Primary seller, OEM & reseller onboarding.' },
+      { label: 'Contact Us', path: '/contact-us', desc: 'Submit tender document for preliminary audit.' }
+    ],
+    pageType: 'service'
+  };
+}
+
+/**
+ * Automatically registers all tender keywords in ROUTES_SEO for unified sitemapping,
+ * server-side rendering, and instant client-side SEO resolution.
+ */
+export function registerTenderKeywordsInRoutesSeo(): void {
+  for (const kw of TENDER_KEYWORDS_DATA) {
+    const routeKey = `/tenders-by-keywords/${kw.id}`;
+    ROUTES_SEO[routeKey] = buildKeywordRoute(kw);
+  }
+}
+
+// Automatically register all keywords in ROUTES_SEO on module load
+registerTenderKeywordsInRoutesSeo();
 
 /**
  * Injects FAQPage Schema.org JSON-LD tag into an HTML template head.

@@ -15,27 +15,29 @@ import {
 import { CORE_SERVICES, PORTALS_DATA, CATEGORIES_DATA } from '../lib/constants';
 import { ALL_INDIA_SUMMARY, STATES_DATA, CITIES_DATA } from '../lib/locationData';
 import { BLOG_ARTICLES } from '../lib/blogArticlesData';
+import { TENDER_KEYWORDS_DATA } from '../lib/tenderKeywordsData';
 
 interface SitemapDirectoryProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, slug?: string) => void;
   onSelectLocation?: (locationId: string) => void;
   onOpenInquiry?: (category?: string, service?: string, city?: string) => void;
 }
 
 type TabMode = 'visual' | 'xml' | 'crawler-guide';
-type FilterType = 'all' | 'pages' | 'articles' | 'services' | 'categories' | 'portals' | 'states' | 'cities';
+type FilterType = 'all' | 'keywords' | 'regional' | 'pages' | 'articles' | 'services' | 'categories' | 'portals' | 'states' | 'cities';
 
 interface SitemapNode {
   id: string;
   title: string;
   slug: string;
-  category: 'Page' | 'Article' | 'Service' | 'Sector' | 'Portal' | 'State' | 'City';
+  category: 'Page' | 'Article' | 'Service' | 'Sector' | 'Portal' | 'State' | 'City' | 'Keyword';
   priority: string;
   changeFreq: 'daily' | 'weekly' | 'monthly';
   description: string;
   badge?: string;
   targetPage: string;
   locationId?: string;
+  keywordSlug?: string;
 }
 
 export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
@@ -69,6 +71,7 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
       { id: 'page-faqs', title: 'Tender FAQs & Statutory Procurement Guidelines', slug: '#faqs', targetPage: 'faqs', priority: '0.80', changeFreq: 'monthly' as const, desc: 'Answers regarding EMD exemptions, Bid Securing Declarations, blacklisting defense, and DSC installation.' },
       { id: 'page-contact', title: 'Contact & Dedicated Tender Document Intake Desk', slug: '#contact', targetPage: 'contact', priority: '0.85', changeFreq: 'monthly' as const, desc: 'Direct intake desk to upload tender NIT documents for expedited eligibility audit and fee quotes.' },
       { id: 'page-blog', title: 'Government Procurement Blog & Regulatory Law Hub', slug: '#blog', targetPage: 'blog', priority: '0.95', changeFreq: 'daily' as const, desc: 'Authoritative long-form articles on tender trends, GFR 2017 amendments, GeM 4.0 policy, FSSAI licensing and DPIIT startup waivers.' },
+      { id: 'page-tenders-by-keywords', title: 'Tenders by Keywords & Trades Directory', slug: 'tenders-by-keywords', targetPage: 'tenders-by-keywords', priority: '0.90', changeFreq: 'daily' as const, desc: 'Complete keyword and trade directory covering Civil, Healthcare, Electrical, IT, Security, and Logistics with 1-click inquiry.' },
     ];
 
     corePages.forEach((p) => {
@@ -194,6 +197,22 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
       });
     });
 
+    // 8. 328 Tender Industry Trade Keywords
+    TENDER_KEYWORDS_DATA.forEach((kw) => {
+      list.push({
+        id: `kw-${kw.id}`,
+        title: `${kw.name} Consultancy & Bidding`,
+        slug: `tenders-by-keywords/${kw.id}`,
+        category: 'Keyword',
+        priority: '0.85',
+        changeFreq: 'weekly',
+        description: `${kw.shortName} (${kw.category}) · Value: ${kw.sampleTenderValue}. ${kw.description}`,
+        badge: `${kw.category} · ${kw.letter}`,
+        targetPage: 'tenders-by-keywords',
+        keywordSlug: kw.id,
+      });
+    });
+
     return list;
   }, []);
 
@@ -202,7 +221,9 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
     return allNodes.filter((node) => {
       // Type match
       let matchesType = true;
-      if (filterType === 'pages') matchesType = node.category === 'Page';
+      if (filterType === 'keywords') matchesType = node.category === 'Keyword';
+      else if (filterType === 'regional') matchesType = node.category === 'State' || node.category === 'City';
+      else if (filterType === 'pages') matchesType = node.category === 'Page';
       else if (filterType === 'articles') matchesType = node.category === 'Article';
       else if (filterType === 'services') matchesType = node.category === 'Service';
       else if (filterType === 'categories') matchesType = node.category === 'Sector';
@@ -216,7 +237,8 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
         node.title.toLowerCase().includes(q) ||
         node.description.toLowerCase().includes(q) ||
         node.category.toLowerCase().includes(q) ||
-        (node.badge && node.badge.toLowerCase().includes(q));
+        (node.badge && node.badge.toLowerCase().includes(q)) ||
+        (node.keywordSlug && node.keywordSlug.toLowerCase().includes(q));
 
       return matchesType && matchesSearch;
     });
@@ -270,6 +292,10 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
     }
     if (node.category === 'Article') {
       window.location.hash = node.slug;
+    }
+    if (node.category === 'Keyword' && node.keywordSlug) {
+      onNavigate('tenders-by-keywords', node.keywordSlug);
+      return;
     }
     onNavigate(node.targetPage);
   };
@@ -402,13 +428,13 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
                   {[
                     { id: 'all', label: 'All Nodes', count: allNodes.length },
-                    { id: 'pages', label: 'Core Pages', count: allNodes.filter(n => n.category === 'Page').length },
-                    { id: 'articles', label: 'Blog Articles', count: allNodes.filter(n => n.category === 'Article').length },
+                    { id: 'keywords', label: 'Tender Keywords', count: allNodes.filter(n => n.category === 'Keyword').length },
+                    { id: 'regional', label: 'Regional Hubs', count: allNodes.filter(n => n.category === 'State' || n.category === 'City').length },
                     { id: 'services', label: 'Services', count: allNodes.filter(n => n.category === 'Service').length },
                     { id: 'categories', label: 'Sectors', count: allNodes.filter(n => n.category === 'Sector').length },
                     { id: 'portals', label: 'Portals', count: allNodes.filter(n => n.category === 'Portal').length },
-                    { id: 'states', label: 'States (28)', count: allNodes.filter(n => n.category === 'State').length },
-                    { id: 'cities', label: 'Cities (50+)', count: allNodes.filter(n => n.category === 'City').length },
+                    { id: 'articles', label: 'Blog Articles', count: allNodes.filter(n => n.category === 'Article').length },
+                    { id: 'pages', label: 'Core Pages', count: allNodes.filter(n => n.category === 'Page').length },
                   ].map((btn) => (
                     <button
                       key={btn.id}
@@ -427,26 +453,48 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
                   ))}
                 </div>
 
-                {/* Instant Search Box */}
-                <div className="relative min-w-[280px]">
+                {/* Instant Search Box with Live Filtering */}
+                <div className="relative min-w-[320px]">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search node, city, portal, ISO, keyword..."
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 font-medium transition-colors"
+                    placeholder="Search 328+ keywords & regional hubs (e.g., Road, CCTV, Gujarat, Hospital)..."
+                    className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 font-medium transition-colors"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 text-xs cursor-pointer font-bold"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 text-xs cursor-pointer font-bold w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300"
+                      title="Clear search filter"
                     >
                       ×
                     </button>
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Live Filter Indicator Bar */}
+            <div className="flex items-center justify-between px-2 text-xs text-slate-500 font-medium">
+              <div>
+                Showing <strong className="text-slate-900 font-black">{filteredNodes.length}</strong> of <strong className="text-slate-900 font-black">{allNodes.length}</strong> indexable sitemap nodes
+                {searchQuery && (
+                  <span className="ml-2 px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold font-mono">
+                    Match: &quot;{searchQuery}&quot;
+                  </span>
+                )}
+              </div>
+              {filterType !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setFilterType('all')}
+                  className="text-amber-800 hover:text-amber-900 font-bold cursor-pointer underline"
+                >
+                  Reset Category
+                </button>
+              )}
             </div>
 
             {/* Sitemap Nodes Grid */}
@@ -468,8 +516,10 @@ export const SitemapDirectory: React.FC<SitemapDirectoryProps> = ({
                         <div className="flex items-center justify-between gap-2">
                           <span
                             className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-black ${
-                              node.category === 'Page'
-                                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              node.category === 'Keyword'
+                                ? 'bg-amber-100 text-amber-950 border border-amber-300'
+                                : node.category === 'Page'
+                                ? 'bg-slate-100 text-slate-900 border border-slate-300'
                                 : node.category === 'Service'
                                 ? 'bg-blue-100 text-blue-900 border border-blue-300'
                                 : node.category === 'Sector'

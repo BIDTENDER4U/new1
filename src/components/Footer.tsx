@@ -230,6 +230,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenChecklistModal, onNavigate
                   Dynamic XML Sitemap & Crawl Hub
                 </a>
               </li>
+              <li>
+                <a
+                  href="/tenders-by-keywords"
+                  onClick={(e) => { e.preventDefault(); handleNav('tenders-by-keywords'); }}
+                  className="text-slate-300 hover:text-[#D4AF70] hover:underline transition-colors block truncate"
+                  title="Browse tenders by trade keywords & sectors"
+                >
+                  Tenders by Keywords & Trades
+                </a>
+              </li>
             </ul>
           </div>
 

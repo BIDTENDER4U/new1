@@ -1,4 +1,5 @@
 import { BLOG_ARTICLES } from './blogArticlesData';
+import { TENDER_KEYWORDS_DATA } from './tenderKeywordsData';
 
 export interface SearchItem {
   id: string;
@@ -272,7 +273,25 @@ export function getAllSearchItems(): SearchItem[] {
     ],
   }));
 
-  return [...CORE_SEARCH_ITEMS, ...blogItems];
+  const keywordItems: SearchItem[] = TENDER_KEYWORDS_DATA.map((kw) => ({
+    id: `keyword-${kw.id}`,
+    title: `${kw.name} (Tender Consultancy)`,
+    description: kw.description,
+    type: 'service',
+    path: `/tenders-by-keywords`,
+    pageId: 'tenders-by-keywords',
+    keywords: [
+      'keyword',
+      'tenders by keyword',
+      kw.name.toLowerCase(),
+      kw.shortName.toLowerCase(),
+      kw.category.toLowerCase(),
+      ...kw.keywords,
+      ...kw.typicalPortals.map((p) => p.toLowerCase()),
+    ],
+  }));
+
+  return [...CORE_SEARCH_ITEMS, ...blogItems, ...keywordItems];
 }
 
 export function searchIndex(
